@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.github.qurore.fittrack"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.github.qurore.fittrack"
