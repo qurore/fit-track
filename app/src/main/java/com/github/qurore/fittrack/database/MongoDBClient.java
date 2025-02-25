@@ -100,6 +100,8 @@ public class MongoDBClient {
                     ConnectionString connString = new ConnectionString(modifiedConnString);
                     MongoClientSettings settings = MongoClientSettings.builder()
                             .applyConnectionString(connString)
+                            .applyToSocketSettings(builder -> 
+                                builder.connectTimeout(10000, java.util.concurrent.TimeUnit.MILLISECONDS))
                             .build();
                     
                     mongoClient = MongoClients.create(settings);
@@ -108,6 +110,8 @@ public class MongoDBClient {
                     ConnectionString connString = new ConnectionString(connectionString);
                     MongoClientSettings settings = MongoClientSettings.builder()
                             .applyConnectionString(connString)
+                            .applyToSocketSettings(builder -> 
+                                builder.connectTimeout(10000, java.util.concurrent.TimeUnit.MILLISECONDS))
                             .build();
                     
                     mongoClient = MongoClients.create(settings);
