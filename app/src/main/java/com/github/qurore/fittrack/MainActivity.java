@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         // MongoDB Atlasクライアントの初期化
         String connectionString = getString(R.string.mongodb_connection_string);
         String databaseName = getString(R.string.mongodb_database_name);
+        Log.d("MainActivity", "Initializing MongoDB client with database: " + databaseName);
         mongoDBClient = MongoDBClient.getInstance(connectionString, databaseName);
     }
     
@@ -162,11 +164,21 @@ public class MainActivity extends AppCompatActivity {
     // ユーザープロファイル情報をMongoDBに保存する例
     private void saveUserProfileToMongoDB(UserProfile userProfile) {
         try {
+            // ユーザーIDを文字列として取得
+            String userId = userProfile.getId();
+            if (userId == null) {
+                Log.w("MongoDB", "User ID is null, using random ID");
+                userId = UUID.randomUUID().toString();
+            }
+            
             Document userDocument = new Document()
-                    .append("auth0_id", userProfile.getId())
+                    .append("_id", userId) // _idフィールドを明示的に設定
+                    .append("auth0_id", userId)
                     .append("name", userProfile.getName())
                     .append("email", userProfile.getEmail())
                     .append("created_at", new java.util.Date());
+            
+            Log.d("MongoDB", "Attempting to save user profile: " + userDocument.toJson());
             
             Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
                     .subscribe(success -> {
@@ -176,14 +188,12 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("MongoDB", "Failed to save user profile");
                         }
                     }, error -> {
-                        Log.e("MongoDB", "Error saving user profile: " + error.getMessage());
-                        // Don't let MongoDB errors crash the app
+                        Log.e("MongoDB", "Error saving user profile: " + error.getMessage(), error);
                     });
             
             disposables.add(disposable);
         } catch (Exception e) {
-            // Catch any exceptions to prevent app crashes
-            Log.e("MongoDB", "Exception when trying to save profile: " + e.getMessage());
+            Log.e("MongoDB", "Exception when trying to save profile: " + e.getMessage(), e);
         }
     }
     

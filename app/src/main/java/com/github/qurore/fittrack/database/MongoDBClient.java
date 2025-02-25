@@ -42,25 +42,67 @@ public class MongoDBClient {
     public synchronized void connect() {
         if (mongoClient == null) {
             try {
+                Log.d(TAG, "Attempting to connect to MongoDB with connection string: " + 
+                      connectionString.replaceAll(":[^/][^/][^@]*@", ":****@"));
+                
                 // Check if using SRV connection string
                 if (connectionString.startsWith("mongodb+srv://")) {
-                    Log.w(TAG, "SRV connection strings are not fully supported on Android");
-                    // Extract credentials and host from the SRV connection string
-                    String modifiedConnString = connectionString.replace("mongodb+srv://", "mongodb://");
-                    // If the connection string contains a specific server, use it directly
-                    // Otherwise, use a fallback approach
-                    if (modifiedConnString.contains("@") && modifiedConnString.contains(".mongodb.net")) {
-                        // Keep the connection string but disable DNS resolution
-                        ConnectionString connString = new ConnectionString(modifiedConnString);
-                        MongoClientSettings settings = MongoClientSettings.builder()
-                                .applyConnectionString(connString)
-                                .build();
-                        
-                        mongoClient = MongoClients.create(settings);
-                    } else {
-                        // Fallback to a simpler connection approach if needed
-                        mongoClient = MongoClients.create(modifiedConnString);
+                    Log.w(TAG, "SRV connection strings require special handling on Android");
+                    
+                    // Parse the connection string to extract components
+                    String modifiedConnString = connectionString;
+                    
+                    // Extract database name if present
+                    String dbNameInUrl = "";
+                    if (connectionString.contains("/") && connectionString.lastIndexOf("/") > connectionString.indexOf("@")) {
+                        int lastSlashIndex = connectionString.lastIndexOf("/");
+                        dbNameInUrl = connectionString.substring(lastSlashIndex + 1);
+                        modifiedConnString = connectionString.substring(0, lastSlashIndex);
                     }
+                    
+                    // Convert to standard connection string format
+                    modifiedConnString = modifiedConnString.replace("mongodb+srv://", "mongodb://");
+                    
+                    // Extract host part
+                    String hostPart = "";
+                    if (modifiedConnString.contains("@")) {
+                        hostPart = modifiedConnString.substring(modifiedConnString.indexOf("@") + 1);
+                    }
+                    
+                    // For MongoDB Atlas, we can construct the direct connection string
+                    if (hostPart.contains(".mongodb.net")) {
+                        // Get the cluster name
+                        String clusterName = hostPart.split("\\.")[0];
+                        
+                        // Construct direct connection to all shards
+                        String shardedHosts = clusterName + "-shard-00-00." + hostPart.substring(hostPart.indexOf(".") + 1) + ":27017," +
+                                             clusterName + "-shard-00-01." + hostPart.substring(hostPart.indexOf(".") + 1) + ":27017," +
+                                             clusterName + "-shard-00-02." + hostPart.substring(hostPart.indexOf(".") + 1) + ":27017";
+                        
+                        // Replace the host part
+                        modifiedConnString = modifiedConnString.replace(hostPart, shardedHosts);
+                        
+                        // Add required parameters for direct connection
+                        modifiedConnString += "/?ssl=true&replicaSet=atlas-" + 
+                                             clusterName.substring(0, Math.min(6, clusterName.length())) + 
+                                             "-shard-0&authSource=admin&retryWrites=true&w=majority";
+                        
+                        // Add back the database name if it was present
+                        if (!dbNameInUrl.isEmpty()) {
+                            modifiedConnString = modifiedConnString.replace("/?", "/" + dbNameInUrl + "?");
+                        }
+                        
+                        Log.d(TAG, "Modified connection string for direct connection: " + 
+                              modifiedConnString.replaceAll(":[^/][^/][^@]*@", ":****@"));
+                    }
+                    
+                    // Create MongoDB client with the modified connection string
+                    ConnectionString connString = new ConnectionString(modifiedConnString);
+                    MongoClientSettings settings = MongoClientSettings.builder()
+                            .applyConnectionString(connString)
+                            .build();
+                    
+                    mongoClient = MongoClients.create(settings);
                 } else {
                     // Standard connection string
                     ConnectionString connString = new ConnectionString(connectionString);
@@ -72,7 +114,7 @@ public class MongoDBClient {
                 }
                 Log.d(TAG, "Successfully connected to MongoDB Atlas");
             } catch (Exception e) {
-                Log.e(TAG, "Error connecting to MongoDB Atlas: " + e.getMessage());
+                Log.e(TAG, "Error connecting to MongoDB Atlas: " + e.getMessage(), e);
                 throw e;
             }
         }
@@ -101,10 +143,13 @@ public class MongoDBClient {
     public Single<Boolean> insertDocumentAsync(String collectionName, Document document) {
         return Single.fromCallable(() -> {
             try {
+                // データベースとコレクションが存在しない場合は自動的に作成される
+                Log.d(TAG, "Inserting document into " + databaseName + "." + collectionName);
                 getCollection(collectionName).insertOne(document);
+                Log.d(TAG, "Document inserted successfully");
                 return true;
             } catch (MongoException e) {
-                Log.e(TAG, "Error inserting document: " + e.getMessage());
+                Log.e(TAG, "Error inserting document: " + e.getMessage(), e);
                 return false;
             }
         }).subscribeOn(Schedulers.io())

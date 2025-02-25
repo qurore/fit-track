@@ -1,6 +1,8 @@
 # Project Specifications
 # - Android Java API 26 (Oreo, Android 8.0)
 # - Auth0 for authentication implementation
+!!IMPORTANT!!
+ALL Comment and output should be English!, Not Japanese!
 
 # Include main application source files
 include: app/src/main/java/com/github/qurore/fittrack/**/*.java
