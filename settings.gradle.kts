@@ -16,7 +16,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // 必要に応じて jcenter() を追加
+        // MongoDB Realm repository
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
