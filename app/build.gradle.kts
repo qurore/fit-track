@@ -32,6 +32,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        
+        // デシュガリングを有効化
+        isCoreLibraryDesugaringEnabled = true
     }
 }
 
@@ -42,7 +45,21 @@ dependencies {
     implementation(libs.constraintlayout)
     
     // Auth0 dependencies
-    implementation(libs.auth0.android)
+    implementation("com.auth0.android:auth0:2.10.2")
+    
+    // Edge-to-Edge support
+    implementation("androidx.core:core:1.12.0")
+    implementation("androidx.window:window:1.2.0")
+    
+    // MongoDB Java Driver
+    implementation("org.mongodb:mongodb-driver-sync:4.9.1")
+    
+    // RxJava for async operations (optional but recommended)
+    implementation("io.reactivex.rxjava3:rxjava:3.1.6")
+    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+    
+    // Core library desugaring (Java 8+ APIサポート)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -5,12 +5,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.auth0.android.Auth0;
 import com.auth0.android.authentication.AuthenticationException;
@@ -18,33 +15,33 @@ import com.auth0.android.callback.Callback;
 import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
-import com.auth0.android.management.UsersAPIClient;
-import com.auth0.android.management.ManagementException;
+import com.auth0.android.authentication.AuthenticationAPIClient;
+import com.github.qurore.fittrack.database.MongoDBClient;
+import org.bson.Document;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
     private Auth0 auth0;
     private TextView userProfileTextView;
     private Button loginButton;
     private Button logoutButton;
+    private MongoDBClient mongoDBClient;
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        
-        // Set up edge-to-edge display
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
         
         // Initialize Auth0
         auth0 = new Auth0(
                 getString(R.string.com_auth0_client_id),
                 getString(R.string.com_auth0_domain)
         );
+        
+        // 注: 最新のAuth0 SDKでは setOIDCConformant メソッドは不要
+        // デフォルトでOIDC準拠モードになっています
         
         // Set up UI elements
         userProfileTextView = findViewById(R.id.userProfileTextView);
@@ -56,13 +53,18 @@ public class MainActivity extends AppCompatActivity {
         
         // Initially hide logout button
         logoutButton.setVisibility(View.GONE);
+        
+        // MongoDB Atlasクライアントの初期化
+        String connectionString = getString(R.string.mongodb_connection_string);
+        String databaseName = getString(R.string.mongodb_database_name);
+        mongoDBClient = MongoDBClient.getInstance(connectionString, databaseName);
     }
     
     private void login() {
         WebAuthProvider.login(auth0)
                 .withScheme(getString(R.string.com_auth0_scheme))
-                .withScope("openid profile email")
-                .withAudience(String.format("https://%s/userinfo", getString(R.string.com_auth0_domain)))
+                .withScope("openid profile email read:current_user")
+                .withAudience(String.format("https://%s/api/v2/", getString(R.string.com_auth0_domain)))
                 .start(this, new Callback<Credentials, AuthenticationException>() {
                     @Override
                     public void onSuccess(Credentials credentials) {
@@ -76,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             loginButton.setVisibility(View.GONE);
                             logoutButton.setVisibility(View.VISIBLE);
+                            Toast.makeText(MainActivity.this, 
+                                    "Login successful!", 
+                                    Toast.LENGTH_SHORT).show();
                         });
                     }
 
@@ -91,21 +96,36 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void fetchUserProfile(String accessToken) {
-        UsersAPIClient usersClient = new UsersAPIClient(auth0, accessToken);
-        usersClient.getProfile(accessToken)
-                .start(new Callback<UserProfile, ManagementException>() {
+        // Auth0 APIからユーザー情報を取得
+        AuthenticationAPIClient authClient = new AuthenticationAPIClient(auth0);
+        authClient.userInfo(accessToken)
+                .start(new Callback<UserProfile, AuthenticationException>() {
                     @Override
                     public void onSuccess(UserProfile userProfile) {
                         String name = userProfile.getName();
                         String email = userProfile.getEmail();
                         
+                        // デバッグ用ログを追加
+                        android.util.Log.d("Auth0Profile", "Name: " + name + ", Email: " + email);
+                        
                         runOnUiThread(() -> {
-                            userProfileTextView.setText(String.format("Name: %s\nEmail: %s", name, email));
+                            // 明示的にnullチェックを追加
+                            if (name != null && email != null) {
+                                userProfileTextView.setText(String.format("Name: %s\nEmail: %s", name, email));
+                            } else {
+                                userProfileTextView.setText("Profile received but some data is missing");
+                            }
                         });
+                        
+                        // MongoDBにユーザープロファイルを保存
+                        saveUserProfileToMongoDB(userProfile);
                     }
 
                     @Override
-                    public void onFailure(ManagementException e) {
+                    public void onFailure(AuthenticationException e) {
+                        // エラーログを追加
+                        android.util.Log.e("Auth0Error", "Failed to get profile: " + e.getMessage());
+                        
                         runOnUiThread(() -> {
                             Toast.makeText(MainActivity.this, 
                                     "Failed to get user profile: " + e.getMessage(), 
@@ -137,5 +157,40 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 });
+    }
+    
+    // ユーザープロファイル情報をMongoDBに保存する例
+    private void saveUserProfileToMongoDB(UserProfile userProfile) {
+        Document userDocument = new Document()
+                .append("auth0_id", userProfile.getId())
+                .append("name", userProfile.getName())
+                .append("email", userProfile.getEmail())
+                .append("created_at", new java.util.Date());
+        
+        Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
+                .subscribe(success -> {
+                    if (success) {
+                        Log.d("MongoDB", "User profile saved successfully");
+                    } else {
+                        Log.e("MongoDB", "Failed to save user profile");
+                    }
+                }, error -> {
+                    Log.e("MongoDB", "Error saving user profile: " + error.getMessage());
+                });
+        
+        disposables.add(disposable);
+    }
+    
+    @Override
+    protected void onDestroy() {
+        // RxJavaのDisposableをクリーンアップ
+        disposables.clear();
+        
+        // MongoDBクライアントを閉じる
+        if (mongoDBClient != null) {
+            mongoDBClient.close();
+        }
+        
+        super.onDestroy();
     }
 }

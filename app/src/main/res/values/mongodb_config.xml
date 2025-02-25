@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mongodb_connection_string">mongodb+srv://app:OZop2RTDhU2Zr22c@fittrack.oaulk.mongodb.net</string>
+    <string name="mongodb_database_name">fittrack</string>
+</resources> 

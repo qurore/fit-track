@@ -16,6 +16,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // 必要に応じて jcenter() を追加
     }
 }
 

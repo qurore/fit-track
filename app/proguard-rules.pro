@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# MongoDB Driver
+-keep class org.bson.** { *; }
+-keep class com.mongodb.** { *; }
+-dontwarn org.bson.**
+-dontwarn com.mongodb.**
