@@ -42,12 +42,34 @@ public class MongoDBClient {
     public synchronized void connect() {
         if (mongoClient == null) {
             try {
-                ConnectionString connString = new ConnectionString(connectionString);
-                MongoClientSettings settings = MongoClientSettings.builder()
-                        .applyConnectionString(connString)
-                        .build();
-                
-                mongoClient = MongoClients.create(settings);
+                // Check if using SRV connection string
+                if (connectionString.startsWith("mongodb+srv://")) {
+                    Log.w(TAG, "SRV connection strings are not fully supported on Android");
+                    // Extract credentials and host from the SRV connection string
+                    String modifiedConnString = connectionString.replace("mongodb+srv://", "mongodb://");
+                    // If the connection string contains a specific server, use it directly
+                    // Otherwise, use a fallback approach
+                    if (modifiedConnString.contains("@") && modifiedConnString.contains(".mongodb.net")) {
+                        // Keep the connection string but disable DNS resolution
+                        ConnectionString connString = new ConnectionString(modifiedConnString);
+                        MongoClientSettings settings = MongoClientSettings.builder()
+                                .applyConnectionString(connString)
+                                .build();
+                        
+                        mongoClient = MongoClients.create(settings);
+                    } else {
+                        // Fallback to a simpler connection approach if needed
+                        mongoClient = MongoClients.create(modifiedConnString);
+                    }
+                } else {
+                    // Standard connection string
+                    ConnectionString connString = new ConnectionString(connectionString);
+                    MongoClientSettings settings = MongoClientSettings.builder()
+                            .applyConnectionString(connString)
+                            .build();
+                    
+                    mongoClient = MongoClients.create(settings);
+                }
                 Log.d(TAG, "Successfully connected to MongoDB Atlas");
             } catch (Exception e) {
                 Log.e(TAG, "Error connecting to MongoDB Atlas: " + e.getMessage());

@@ -161,24 +161,30 @@ public class MainActivity extends AppCompatActivity {
     
     // ユーザープロファイル情報をMongoDBに保存する例
     private void saveUserProfileToMongoDB(UserProfile userProfile) {
-        Document userDocument = new Document()
-                .append("auth0_id", userProfile.getId())
-                .append("name", userProfile.getName())
-                .append("email", userProfile.getEmail())
-                .append("created_at", new java.util.Date());
-        
-        Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
-                .subscribe(success -> {
-                    if (success) {
-                        Log.d("MongoDB", "User profile saved successfully");
-                    } else {
-                        Log.e("MongoDB", "Failed to save user profile");
-                    }
-                }, error -> {
-                    Log.e("MongoDB", "Error saving user profile: " + error.getMessage());
-                });
-        
-        disposables.add(disposable);
+        try {
+            Document userDocument = new Document()
+                    .append("auth0_id", userProfile.getId())
+                    .append("name", userProfile.getName())
+                    .append("email", userProfile.getEmail())
+                    .append("created_at", new java.util.Date());
+            
+            Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
+                    .subscribe(success -> {
+                        if (success) {
+                            Log.d("MongoDB", "User profile saved successfully");
+                        } else {
+                            Log.e("MongoDB", "Failed to save user profile");
+                        }
+                    }, error -> {
+                        Log.e("MongoDB", "Error saving user profile: " + error.getMessage());
+                        // Don't let MongoDB errors crash the app
+                    });
+            
+            disposables.add(disposable);
+        } catch (Exception e) {
+            // Catch any exceptions to prevent app crashes
+            Log.e("MongoDB", "Exception when trying to save profile: " + e.getMessage());
+        }
     }
     
     @Override
