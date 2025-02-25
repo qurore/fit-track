@@ -41,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.com_auth0_domain)
         );
         
-        // 注: 最新のAuth0 SDKでは setOIDCConformant メソッドは不要
-        // デフォルトでOIDC準拠モードになっています
+        // Note: setOIDCConformant method is not needed in the latest Auth0 SDK
+        // It's OIDC compliant by default
         
         // Set up UI elements
         userProfileTextView = findViewById(R.id.userProfileTextView);
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         // Initially hide logout button
         logoutButton.setVisibility(View.GONE);
         
-        // MongoDB Atlasクライアントの初期化
+        // Initialize MongoDB Atlas client
         String connectionString = getString(R.string.mongodb_connection_string);
         String databaseName = getString(R.string.mongodb_database_name);
         Log.d("MainActivity", "Initializing MongoDB client with database: " + databaseName);
@@ -161,10 +161,10 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
     
-    // ユーザープロファイル情報をMongoDBに保存する例
+    // Example of saving user profile information to MongoDB
     private void saveUserProfileToMongoDB(UserProfile userProfile) {
         try {
-            // ユーザーIDを文字列として取得
+            // Get user ID as string
             String userId = userProfile.getId();
             if (userId == null) {
                 Log.w("MongoDB", "User ID is null, using random ID");
@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             }
             
             Document userDocument = new Document()
-                    .append("_id", userId) // _idフィールドを明示的に設定
+                    .append("_id", userId) // Explicitly set _id field
                     .append("auth0_id", userId)
                     .append("name", userProfile.getName())
                     .append("email", userProfile.getEmail())
@@ -199,10 +199,10 @@ public class MainActivity extends AppCompatActivity {
     
     @Override
     protected void onDestroy() {
-        // RxJavaのDisposableをクリーンアップ
+        // Clean up RxJava Disposables
         disposables.clear();
         
-        // MongoDBクライアントを閉じる
+        // Close MongoDB client
         if (mongoDBClient != null) {
             mongoDBClient.close();
         }

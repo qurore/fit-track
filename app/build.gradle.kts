@@ -52,7 +52,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
         
-        // デシュガリングを有効化
+        // Enable desugaring for Java 8+ API support
         isCoreLibraryDesugaringEnabled = true
     }
 }

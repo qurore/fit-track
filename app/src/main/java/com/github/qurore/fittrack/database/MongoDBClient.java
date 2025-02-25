@@ -139,11 +139,11 @@ public class MongoDBClient {
         return getDatabase().getCollection(collectionName);
     }
 
-    // 非同期でドキュメントを挿入するメソッド
+    // Method to asynchronously insert a document
     public Single<Boolean> insertDocumentAsync(String collectionName, Document document) {
         return Single.fromCallable(() -> {
             try {
-                // データベースとコレクションが存在しない場合は自動的に作成される
+                // Database and collection will be created automatically if they don't exist
                 Log.d(TAG, "Inserting document into " + databaseName + "." + collectionName);
                 getCollection(collectionName).insertOne(document);
                 Log.d(TAG, "Document inserted successfully");
@@ -156,7 +156,7 @@ public class MongoDBClient {
           .observeOn(AndroidSchedulers.mainThread());
     }
 
-    // 非同期でドキュメントを検索するメソッド
+    // Method to asynchronously find documents
     public Single<List<Document>> findDocumentsAsync(String collectionName, Document query) {
         return Single.fromCallable((Callable<List<Document>>) () -> {
             List<Document> results = new ArrayList<>();
