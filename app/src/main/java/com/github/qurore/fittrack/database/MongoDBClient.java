@@ -56,8 +56,16 @@ public class MongoDBClient {
                     String dbNameInUrl = "";
                     if (connectionString.contains("/") && connectionString.lastIndexOf("/") > connectionString.indexOf("@")) {
                         int lastSlashIndex = connectionString.lastIndexOf("/");
-                        dbNameInUrl = connectionString.substring(lastSlashIndex + 1);
-                        modifiedConnString = connectionString.substring(0, lastSlashIndex);
+                        if (lastSlashIndex < connectionString.length() - 1 && !connectionString.substring(lastSlashIndex + 1).startsWith("?")) {
+                            dbNameInUrl = connectionString.substring(lastSlashIndex + 1);
+                            if (dbNameInUrl.contains("?")) {
+                                dbNameInUrl = dbNameInUrl.substring(0, dbNameInUrl.indexOf("?"));
+                            }
+                            modifiedConnString = connectionString.substring(0, lastSlashIndex);
+                            if (connectionString.contains("?")) {
+                                modifiedConnString += "/" + connectionString.substring(connectionString.indexOf("?"));
+                            }
+                        }
                     }
                     
                     // Convert to standard connection string format
@@ -67,6 +75,9 @@ public class MongoDBClient {
                     String hostPart = "";
                     if (modifiedConnString.contains("@")) {
                         hostPart = modifiedConnString.substring(modifiedConnString.indexOf("@") + 1);
+                        if (hostPart.contains("/")) {
+                            hostPart = hostPart.substring(0, hostPart.indexOf("/"));
+                        }
                     }
                     
                     // For MongoDB Atlas, we can construct the direct connection string
@@ -82,14 +93,46 @@ public class MongoDBClient {
                         // Replace the host part
                         modifiedConnString = modifiedConnString.replace(hostPart, shardedHosts);
                         
+                        // Check if we already have query parameters
+                        boolean hasParams = modifiedConnString.contains("?");
+                        
                         // Add required parameters for direct connection
-                        modifiedConnString += "/?ssl=true&replicaSet=atlas-" + 
-                                             clusterName.substring(0, Math.min(6, clusterName.length())) + 
-                                             "-shard-0&authSource=admin&retryWrites=true&w=majority";
+                        if (hasParams) {
+                            modifiedConnString += "&ssl=true&replicaSet=atlas-" + 
+                                               clusterName.substring(0, Math.min(6, clusterName.length())) + 
+                                               "-shard-0&authSource=admin";
+                            
+                            // Only add these if they're not already present
+                            if (!modifiedConnString.contains("retryWrites=")) {
+                                modifiedConnString += "&retryWrites=true";
+                            }
+                            if (!modifiedConnString.contains("w=")) {
+                                modifiedConnString += "&w=majority";
+                            }
+                        } else {
+                            modifiedConnString += "/?ssl=true&replicaSet=atlas-" + 
+                                               clusterName.substring(0, Math.min(6, clusterName.length())) + 
+                                               "-shard-0&authSource=admin&retryWrites=true&w=majority";
+                        }
                         
                         // Add back the database name if it was present
                         if (!dbNameInUrl.isEmpty()) {
-                            modifiedConnString = modifiedConnString.replace("/?", "/" + dbNameInUrl + "?");
+                            if (modifiedConnString.contains("/?")) {
+                                modifiedConnString = modifiedConnString.replace("/?", "/" + dbNameInUrl + "?");
+                            } else if (modifiedConnString.contains("?")) {
+                                int questionMarkIndex = modifiedConnString.indexOf("?");
+                                modifiedConnString = modifiedConnString.substring(0, questionMarkIndex) + 
+                                                  "/" + dbNameInUrl + 
+                                                  modifiedConnString.substring(questionMarkIndex);
+                            }
+                        }
+                        
+                        // Ensure we have timeout parameters
+                        if (!modifiedConnString.contains("connectTimeoutMS=")) {
+                            modifiedConnString += "&connectTimeoutMS=30000";
+                        }
+                        if (!modifiedConnString.contains("socketTimeoutMS=")) {
+                            modifiedConnString += "&socketTimeoutMS=60000";
                         }
                         
                         Log.d(TAG, "Modified connection string for direct connection: " + 
@@ -100,8 +143,10 @@ public class MongoDBClient {
                     ConnectionString connString = new ConnectionString(modifiedConnString);
                     MongoClientSettings settings = MongoClientSettings.builder()
                             .applyConnectionString(connString)
-                            .applyToSocketSettings(builder -> 
-                                builder.connectTimeout(10000, java.util.concurrent.TimeUnit.MILLISECONDS))
+                            .applyToSocketSettings(builder -> {
+                                builder.connectTimeout(30000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                                builder.readTimeout(60000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                            })
                             .build();
                     
                     mongoClient = MongoClients.create(settings);
@@ -110,8 +155,10 @@ public class MongoDBClient {
                     ConnectionString connString = new ConnectionString(connectionString);
                     MongoClientSettings settings = MongoClientSettings.builder()
                             .applyConnectionString(connString)
-                            .applyToSocketSettings(builder -> 
-                                builder.connectTimeout(10000, java.util.concurrent.TimeUnit.MILLISECONDS))
+                            .applyToSocketSettings(builder -> {
+                                builder.connectTimeout(30000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                                builder.readTimeout(60000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                            })
                             .build();
                     
                     mongoClient = MongoClients.create(settings);
@@ -146,29 +193,112 @@ public class MongoDBClient {
     // Method to asynchronously insert a document
     public Single<Boolean> insertDocumentAsync(String collectionName, Document document) {
         return Single.fromCallable(() -> {
-            try {
-                // Database and collection will be created automatically if they don't exist
-                Log.d(TAG, "Inserting document into " + databaseName + "." + collectionName);
-                getCollection(collectionName).insertOne(document);
-                Log.d(TAG, "Document inserted successfully");
-                return true;
-            } catch (MongoException e) {
-                Log.e(TAG, "Error inserting document: " + e.getMessage(), e);
-                return false;
+            int maxRetries = 3;
+            int currentRetry = 0;
+            boolean success = false;
+            
+            while (currentRetry < maxRetries && !success) {
+                try {
+                    // Database and collection will be created automatically if they don't exist
+                    Log.d(TAG, "Inserting document into " + databaseName + "." + collectionName + 
+                          " (Attempt " + (currentRetry + 1) + "/" + maxRetries + ")");
+                    
+                    // Ensure we have a fresh connection
+                    if (currentRetry > 0) {
+                        Log.d(TAG, "Refreshing MongoDB connection for retry attempt");
+                        close();
+                        connect();
+                    }
+                    
+                    // Set a shorter server selection timeout for this operation
+                    MongoCollection<Document> collection = mongoClient
+                        .getDatabase(databaseName)
+                        .getCollection(collectionName);
+                    
+                    // Execute with a timeout
+                    collection.insertOne(document);
+                    
+                    Log.d(TAG, "Document inserted successfully");
+                    success = true;
+                    return true;
+                } catch (MongoException e) {
+                    currentRetry++;
+                    Log.e(TAG, "Error inserting document (Attempt " + currentRetry + "/" + maxRetries + 
+                          "): " + e.getMessage());
+                    
+                    if (currentRetry >= maxRetries) {
+                        Log.e(TAG, "Maximum retry attempts reached. Giving up.");
+                        return false;
+                    }
+                    
+                    // Wait before retrying
+                    try {
+                        long backoffMs = 1000 * currentRetry;
+                        Log.d(TAG, "Waiting " + backoffMs + "ms before retry...");
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        Log.e(TAG, "Retry interrupted", ie);
+                        return false;
+                    }
+                }
             }
+            
+            return success;
         }).subscribeOn(Schedulers.io())
           .observeOn(AndroidSchedulers.mainThread());
     }
 
-    // Method to asynchronously find documents
+    // Method to asynchronously find documents with retry logic
     public Single<List<Document>> findDocumentsAsync(String collectionName, Document query) {
-        return Single.fromCallable((Callable<List<Document>>) () -> {
+        return Single.fromCallable(() -> {
             List<Document> results = new ArrayList<>();
-            try {
-                getCollection(collectionName).find(query).into(results);
-            } catch (MongoException e) {
-                Log.e(TAG, "Error finding documents: " + e.getMessage());
+            int maxRetries = 3;
+            int currentRetry = 0;
+            boolean success = false;
+            
+            while (currentRetry < maxRetries && !success) {
+                try {
+                    Log.d(TAG, "Finding documents in " + databaseName + "." + collectionName + 
+                          " (Attempt " + (currentRetry + 1) + "/" + maxRetries + ")");
+                    
+                    // Ensure we have a fresh connection for retries
+                    if (currentRetry > 0) {
+                        Log.d(TAG, "Refreshing MongoDB connection for retry attempt");
+                        close();
+                        connect();
+                    }
+                    
+                    // Get collection and execute query
+                    MongoCollection<Document> collection = mongoClient
+                        .getDatabase(databaseName)
+                        .getCollection(collectionName);
+                    
+                    collection.find(query).into(results);
+                    success = true;
+                } catch (MongoException e) {
+                    currentRetry++;
+                    Log.e(TAG, "Error finding documents (Attempt " + currentRetry + "/" + maxRetries + 
+                          "): " + e.getMessage());
+                    
+                    if (currentRetry >= maxRetries) {
+                        Log.e(TAG, "Maximum retry attempts reached. Returning empty results.");
+                        break;
+                    }
+                    
+                    // Wait before retrying
+                    try {
+                        long backoffMs = 1000 * currentRetry;
+                        Log.d(TAG, "Waiting " + backoffMs + "ms before retry...");
+                        Thread.sleep(backoffMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        Log.e(TAG, "Retry interrupted", ie);
+                        break;
+                    }
+                }
             }
+            
             return results;
         }).subscribeOn(Schedulers.io())
           .observeOn(AndroidSchedulers.mainThread());
