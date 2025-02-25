@@ -1,0 +1,131 @@
+# Project Specifications
+# - Android Java API 26 (Oreo, Android 8.0)
+# - Auth0 for authentication implementation
+
+# Include main application source files
+include: app/src/main/java/com/github/qurore/fittrack/**/*.java
+
+# Include Android resource files
+include: app/src/main/res/**/*.xml
+include: app/src/main/AndroidManifest.xml
+
+# Include Gradle build configuration files
+include: app/build.gradle.kts
+include: build.gradle.kts
+include: settings.gradle.kts
+include: gradle/libs.versions.toml
+
+# Include Auth0 specific configuration files
+include: app/src/main/res/values/auth0_credentials.xml
+include: app/src/main/res/values/auth0_config.xml
+include: app/src/main/assets/auth0_configuration.json
+
+# Include test files
+include: app/src/test/java/com/github/qurore/fittrack/**/*.java
+include: app/src/androidTest/java/com/github/qurore/fittrack/**/*.java
+
+# Exclude generated and build directories (align with .gitignore)
+exclude: .gradle/
+exclude: app/build/
+exclude: build/
+exclude: captures/
+exclude: bin/
+exclude: gen/
+exclude: out/
+exclude: .externalNativeBuild/
+exclude: .cxx/
+
+# Exclude IDE configuration files
+exclude: .idea/
+exclude: *.iml
+
+# Exclude local configuration files
+exclude: local.properties
+exclude: gradle.properties
+
+# Exclude sensitive files
+exclude: *.jks
+exclude: *.keystore
+exclude: google-services.json
+
+# Exclude compiled application files
+exclude: *.apk
+exclude: *.aab
+exclude: *.ap_
+
+# Exclude OS-specific files
+exclude: .DS_Store
+exclude: Thumbs.db
+
+# Basic Tree structure
+.
+├── app
+│   ├── build.gradle.kts
+│   ├── proguard-rules.pro
+│   └── src
+│       ├── androidTest
+│       │   └── java
+│       │       └── com
+│       │           └── github
+│       │               └── qurore
+│       │                   └── fittrack
+│       │                       └── ExampleInstrumentedTest.java
+│       ├── main
+│       │   ├── AndroidManifest.xml
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── github
+│       │   │           └── qurore
+│       │   │               └── fittrack
+│       │   │                   └── MainActivity.java
+│       │   └── res
+│       │       ├── drawable
+│       │       │   ├── ic_launcher_background.xml
+│       │       │   └── ic_launcher_foreground.xml
+│       │       ├── layout
+│       │       │   └── activity_main.xml
+│       │       ├── mipmap-anydpi
+│       │       │   ├── ic_launcher.xml
+│       │       │   └── ic_launcher_round.xml
+│       │       ├── mipmap-hdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-mdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xxhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── mipmap-xxxhdpi
+│       │       │   ├── ic_launcher.webp
+│       │       │   └── ic_launcher_round.webp
+│       │       ├── values
+│       │       │   ├── colors.xml
+│       │       │   ├── strings.xml
+│       │       │   └── themes.xml
+│       │       ├── values-night
+│       │       │   └── themes.xml
+│       │       └── xml
+│       │           ├── backup_rules.xml
+│       │           └── data_extraction_rules.xml
+│       └── test
+│           └── java
+│               └── com
+│                   └── github
+│                       └── qurore
+│                           └── fittrack
+│                               └── ExampleUnitTest.java
+├── build.gradle.kts
+├── gradle
+│   ├── libs.versions.toml
+│   └── wrapper
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties
+├── gradle.properties
+├── gradlew
+├── gradlew.bat
+├── local.properties
+└── settings.gradle.kts
