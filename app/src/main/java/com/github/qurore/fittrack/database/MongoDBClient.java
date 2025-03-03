@@ -144,7 +144,7 @@ public class MongoDBClient {
                     MongoClientSettings settings = MongoClientSettings.builder()
                             .applyConnectionString(connString)
                             .applyToSocketSettings(builder -> {
-                                builder.connectTimeout(30000, java.util.concurrent.TimeUnit.MILLISECONDS);
+                                builder.connectTimeout(10000, java.util.concurrent.TimeUnit.MILLISECONDS);
                                 builder.readTimeout(60000, java.util.concurrent.TimeUnit.MILLISECONDS);
                             })
                             .build();
