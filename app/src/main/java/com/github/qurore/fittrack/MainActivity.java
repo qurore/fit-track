@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void fetchUserProfile(String accessToken) {
-        // Auth0 APIからユーザー情報を取得
+        // Fetch user information from Auth0 API
         AuthenticationAPIClient authClient = new AuthenticationAPIClient(auth0);
         authClient.userInfo(accessToken)
                 .start(new Callback<UserProfile, AuthenticationException>() {
@@ -107,11 +107,11 @@ public class MainActivity extends AppCompatActivity {
                         String name = userProfile.getName();
                         String email = userProfile.getEmail();
                         
-                        // デバッグ用ログを追加
+                        // Add debug log
                         android.util.Log.d("Auth0Profile", "Name: " + name + ", Email: " + email);
                         
                         runOnUiThread(() -> {
-                            // 明示的にnullチェックを追加
+                            // Add explicit null check
                             if (name != null && email != null) {
                                 userProfileTextView.setText(String.format("Name: %s\nEmail: %s", name, email));
                             } else {
@@ -119,13 +119,13 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                         
-                        // MongoDBにユーザープロファイルを保存
+                        // Save user profile to MongoDB
                         saveUserProfileToMongoDB(userProfile);
                     }
 
                     @Override
                     public void onFailure(AuthenticationException e) {
-                        // エラーログを追加
+                        // Add error log
                         android.util.Log.e("Auth0Error", "Failed to get profile: " + e.getMessage());
                         
                         runOnUiThread(() -> {
