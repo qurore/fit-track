@@ -60,6 +60,15 @@ public class MainActivity extends AppCompatActivity {
         String databaseName = getString(R.string.mongodb_database_name);
         Log.d("MainActivity", "Initializing MongoDB client with database: " + databaseName);
         mongoDBClient = MongoDBClient.getInstance(connectionString, databaseName);
+        
+        // Add explicit connection attempt for debugging
+        try {
+            Log.d("MainActivity", "Attempting to establish MongoDB connection...");
+            mongoDBClient.connect();
+            Log.d("MainActivity", "MongoDB connection established successfully");
+        } catch (Exception e) {
+            Log.e("MainActivity", "Failed to connect to MongoDB: " + e.getMessage(), e);
+        }
     }
     
     private void login() {
@@ -180,18 +189,32 @@ public class MainActivity extends AppCompatActivity {
             
             Log.d("MongoDB", "Attempting to save user profile: " + userDocument.toJson());
             
-            Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
-                    .subscribe(success -> {
-                        if (success) {
-                            Log.d("MongoDB", "User profile saved successfully");
-                        } else {
-                            Log.e("MongoDB", "Failed to save user profile");
-                        }
-                    }, error -> {
-                        Log.e("MongoDB", "Error saving user profile: " + error.getMessage(), error);
-                    });
-            
-            disposables.add(disposable);
+            // Add connection check before attempting to save
+            if (mongoDBClient != null) {
+                // Ensure we have a connection before proceeding
+                try {
+                    Log.d("MongoDB", "Verifying MongoDB connection before saving profile");
+                    mongoDBClient.connect();
+                    Log.d("MongoDB", "MongoDB connection verified");
+                } catch (Exception e) {
+                    Log.e("MongoDB", "Failed to verify MongoDB connection: " + e.getMessage(), e);
+                }
+                
+                Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
+                        .subscribe(success -> {
+                            if (success) {
+                                Log.d("MongoDB", "User profile saved successfully");
+                            } else {
+                                Log.e("MongoDB", "Failed to save user profile");
+                            }
+                        }, error -> {
+                            Log.e("MongoDB", "Error saving user profile: " + error.getMessage(), error);
+                        });
+                
+                disposables.add(disposable);
+            } else {
+                Log.e("MongoDB", "Cannot save profile - MongoDB client is null");
+            }
         } catch (Exception e) {
             Log.e("MongoDB", "Exception when trying to save profile: " + e.getMessage(), e);
         }
