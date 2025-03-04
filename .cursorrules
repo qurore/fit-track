@@ -131,3 +131,24 @@ exclude: Thumbs.db
 ├── gradlew.bat
 ├── local.properties
 └── settings.gradle.kts
+
+
+
+# Project Overview
+FitTrack: Comprehensive Workout Tracking Application:
+Project Overview
+FitTrack is an Android application designed to help workout enthusiast track and monitor their workout progress. The app will provide a recording feature both strength training and cardio exercises.
+Use Cases
+-	Record and track workout progress, including exercise intensity and repetitions for consistent training
+-	Get personalized workout suggestions and guidance for daily routines
+Core Feature
+-	Strength Training Library: Offer a pre-defined list of exercises for each body part
+-	Cardio Exercise Library: Offer a pre-defined list of cardio workouts
+-	Exercise Logging: Provide an input form for recording workout details, accessible by tapping each exercise
+-	History Visualization: View workout progress through time-series graphs
+-	Workout Summary: Display weekly and monthly workout frequency with exercise counts by category
+Challenging Features with Higher Complexity
+The following features involve higher implementation complexity and may not be completable within the semester timeframe. However, they are crucial for improving the overall application quality:
+-	User Authentication: Implementation of secure login system using commercial Identity Provider (IDP)
+-	Cloud Storage: Data management and storage solution using MongoDB Atlas
+-	Smart Recommendations: "Workout of the Day" suggestions powered by cloud backend services
