@@ -2,6 +2,7 @@ package com.github.qurore.fittrack;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,6 +14,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class DashboardActivity extends AppCompatActivity {
 
     private TextView userInfoTextView;
+    private TextView historyContentTextView;
+    private TextView settingsContentTextView;
     private TextView headerUsernameTextView;
     private Button logoutButton;
     private String userName;
@@ -30,6 +33,8 @@ public class DashboardActivity extends AppCompatActivity {
         
         // Initialize views
         userInfoTextView = findViewById(R.id.userInfoTextView);
+        historyContentTextView = findViewById(R.id.historyContentTextView);
+        settingsContentTextView = findViewById(R.id.settingsContentTextView);
         headerUsernameTextView = findViewById(R.id.headerUsernameTextView);
         logoutButton = findViewById(R.id.logoutButton);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
@@ -65,16 +70,16 @@ public class DashboardActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             
             if (itemId == R.id.navigation_home) {
-                // Already on home screen
-                Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+                // Show home content, hide others
+                showHomeContent();
                 return true;
             } else if (itemId == R.id.navigation_history) {
-                // Would navigate to history screen
-                Toast.makeText(this, "History - Not implemented yet", Toast.LENGTH_SHORT).show();
+                // Show history content, hide others
+                showHistoryContent();
                 return true;
             } else if (itemId == R.id.navigation_settings) {
-                // Would navigate to settings screen
-                Toast.makeText(this, "Settings - Not implemented yet", Toast.LENGTH_SHORT).show();
+                // Show settings content, hide others
+                showSettingsContent();
                 return true;
             }
             
@@ -83,5 +88,23 @@ public class DashboardActivity extends AppCompatActivity {
         
         // Set default selection
         bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+    }
+    
+    private void showHomeContent() {
+        userInfoTextView.setVisibility(View.VISIBLE);
+        historyContentTextView.setVisibility(View.GONE);
+        settingsContentTextView.setVisibility(View.GONE);
+    }
+    
+    private void showHistoryContent() {
+        userInfoTextView.setVisibility(View.GONE);
+        historyContentTextView.setVisibility(View.VISIBLE);
+        settingsContentTextView.setVisibility(View.GONE);
+    }
+    
+    private void showSettingsContent() {
+        userInfoTextView.setVisibility(View.GONE);
+        historyContentTextView.setVisibility(View.GONE);
+        settingsContentTextView.setVisibility(View.VISIBLE);
     }
 } 
