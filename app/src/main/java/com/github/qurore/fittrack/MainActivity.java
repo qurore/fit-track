@@ -46,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
         
         // Initially hide logout button
         logoutButton.setVisibility(View.GONE);
+        
+        // Check if we need to logout (coming from DashboardActivity)
+        if (getIntent().getBooleanExtra("LOGOUT", false)) {
+            logout();
+        }
     }
     
     private void login() {
@@ -121,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
     
-    private void logout() {
+    public void logout() {
         WebAuthProvider.logout(auth0)
                 .withScheme(getString(R.string.com_auth0_scheme))
                 .start(this, new Callback<Void, AuthenticationException>() {
