@@ -6,7 +6,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
-import java.util.UUID;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,18 +16,13 @@ import com.auth0.android.provider.WebAuthProvider;
 import com.auth0.android.result.Credentials;
 import com.auth0.android.result.UserProfile;
 import com.auth0.android.authentication.AuthenticationAPIClient;
-import com.github.qurore.fittrack.database.MongoDBClient;
-import org.bson.Document;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     private Auth0 auth0;
     private TextView userProfileTextView;
     private Button loginButton;
     private Button logoutButton;
-    private MongoDBClient mongoDBClient;
-    private final CompositeDisposable disposables = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +35,6 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.com_auth0_domain)
         );
         
-        // Note: setOIDCConformant method is not needed in the latest Auth0 SDK
-        // It's OIDC compliant by default
-        
         // Set up UI elements
         userProfileTextView = findViewById(R.id.userProfileTextView);
         loginButton = findViewById(R.id.loginButton);
@@ -54,21 +45,6 @@ public class MainActivity extends AppCompatActivity {
         
         // Initially hide logout button
         logoutButton.setVisibility(View.GONE);
-        
-        // Initialize MongoDB Atlas client
-        String connectionString = getString(R.string.mongodb_connection_string);
-        String databaseName = getString(R.string.mongodb_database_name);
-        Log.d("MainActivity", "Initializing MongoDB client with database: " + databaseName);
-        mongoDBClient = MongoDBClient.getInstance(connectionString, databaseName);
-        
-        // Add explicit connection attempt for debugging
-        try {
-            Log.d("MainActivity", "Attempting to establish MongoDB connection...");
-            mongoDBClient.connect();
-            Log.d("MainActivity", "MongoDB connection established successfully");
-        } catch (Exception e) {
-            Log.e("MainActivity", "Failed to connect to MongoDB: " + e.getMessage(), e);
-        }
     }
     
     private void login() {
@@ -117,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         String email = userProfile.getEmail();
                         
                         // Add debug log
-                        android.util.Log.d("Auth0Profile", "Name: " + name + ", Email: " + email);
+                        Log.d(TAG, "Auth0 Profile - Name: " + name + ", Email: " + email);
                         
                         runOnUiThread(() -> {
                             // Add explicit null check
@@ -127,15 +103,12 @@ public class MainActivity extends AppCompatActivity {
                                 userProfileTextView.setText("Profile received but some data is missing");
                             }
                         });
-                        
-                        // Save user profile to MongoDB
-                        saveUserProfileToMongoDB(userProfile);
                     }
 
                     @Override
                     public void onFailure(AuthenticationException e) {
                         // Add error log
-                        android.util.Log.e("Auth0Error", "Failed to get profile: " + e.getMessage());
+                        Log.e(TAG, "Failed to get profile: " + e.getMessage());
                         
                         runOnUiThread(() -> {
                             Toast.makeText(MainActivity.this, 
@@ -168,68 +141,5 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 });
-    }
-    
-    // Example of saving user profile information to MongoDB
-    private void saveUserProfileToMongoDB(UserProfile userProfile) {
-        try {
-            // Get user ID as string
-            String userId = userProfile.getId();
-            if (userId == null) {
-                Log.w("MongoDB", "User ID is null, using random ID");
-                userId = UUID.randomUUID().toString();
-            }
-            
-            Document userDocument = new Document()
-                    .append("_id", userId) // Explicitly set _id field
-                    .append("auth0_id", userId)
-                    .append("name", userProfile.getName())
-                    .append("email", userProfile.getEmail())
-                    .append("created_at", new java.util.Date());
-            
-            Log.d("MongoDB", "Attempting to save user profile: " + userDocument.toJson());
-            
-            // Add connection check before attempting to save
-            if (mongoDBClient != null) {
-                // Ensure we have a connection before proceeding
-                try {
-                    Log.d("MongoDB", "Verifying MongoDB connection before saving profile");
-                    mongoDBClient.connect();
-                    Log.d("MongoDB", "MongoDB connection verified");
-                } catch (Exception e) {
-                    Log.e("MongoDB", "Failed to verify MongoDB connection: " + e.getMessage(), e);
-                }
-                
-                Disposable disposable = mongoDBClient.insertDocumentAsync("users", userDocument)
-                        .subscribe(success -> {
-                            if (success) {
-                                Log.d("MongoDB", "User profile saved successfully");
-                            } else {
-                                Log.e("MongoDB", "Failed to save user profile");
-                            }
-                        }, error -> {
-                            Log.e("MongoDB", "Error saving user profile: " + error.getMessage(), error);
-                        });
-                
-                disposables.add(disposable);
-            } else {
-                Log.e("MongoDB", "Cannot save profile - MongoDB client is null");
-            }
-        } catch (Exception e) {
-            Log.e("MongoDB", "Exception when trying to save profile: " + e.getMessage(), e);
-        }
-    }
-    
-    @Override
-    protected void onDestroy() {
-        // Clean up RxJava Disposables
-        disposables.clear();
-        
-        // Close MongoDB client
-        if (mongoDBClient != null) {
-            mongoDBClient.close();
-        }
-        
-        super.onDestroy();
     }
 }
