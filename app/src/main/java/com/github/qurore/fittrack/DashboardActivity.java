@@ -5,21 +5,34 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private TextView userInfoTextView;
-    private TextView historyContentTextView;
     private TextView settingsContentTextView;
     private TextView headerUsernameTextView;
     private Button logoutButton;
     private String userName;
     private BottomNavigationView bottomNavigationView;
+    
+    // Home content
+    private ConstraintLayout homeContentLayout;
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private TabPagerAdapter tabPagerAdapter;
+    
+    // History content
+    private View historyContentLayout;
+    private TabLayout historyTabLayout;
+    private ViewPager2 historyViewPager;
+    private HistoryTabPagerAdapter historyTabPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,24 +45,29 @@ public class DashboardActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         
         // Initialize views
-        userInfoTextView = findViewById(R.id.userInfoTextView);
-        historyContentTextView = findViewById(R.id.historyContentTextView);
         settingsContentTextView = findViewById(R.id.settingsContentTextView);
         headerUsernameTextView = findViewById(R.id.headerUsernameTextView);
         logoutButton = findViewById(R.id.logoutButton);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         
+        // Initialize Home content views
+        homeContentLayout = findViewById(R.id.homeContentLayout);
+        tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewPager);
+        
+        // Initialize History content views
+        historyContentLayout = findViewById(R.id.historyContentLayout);
+        historyTabLayout = historyContentLayout.findViewById(R.id.historyTabLayout);
+        historyViewPager = historyContentLayout.findViewById(R.id.historyViewPager);
+        
         // Get user data from intent
         userName = getIntent().getStringExtra("USER_NAME");
-        String userEmail = getIntent().getStringExtra("USER_EMAIL");
         
-        // Display user information
-        if (userName != null && userEmail != null) {
+        // Display username in header
+        if (userName != null) {
             headerUsernameTextView.setText(userName);
-            userInfoTextView.setText(String.format("Welcome, %s!\nEmail: %s", userName, userEmail));
         } else {
             headerUsernameTextView.setText("User");
-            userInfoTextView.setText("Welcome to FitTrack!");
         }
         
         // Set up logout button
@@ -61,8 +79,34 @@ public class DashboardActivity extends AppCompatActivity {
             finish();
         });
         
+        // Set up tabs
+        setupTabs();
+        setupHistoryTabs();
+        
         // Set up bottom navigation
         setupBottomNavigation();
+    }
+    
+    private void setupTabs() {
+        // Initialize the ViewPager adapter
+        tabPagerAdapter = new TabPagerAdapter(this);
+        viewPager.setAdapter(tabPagerAdapter);
+        
+        // Connect TabLayout with ViewPager2
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            tab.setText(tabPagerAdapter.getTabTitle(position));
+        }).attach();
+    }
+    
+    private void setupHistoryTabs() {
+        // Initialize the ViewPager adapter for History
+        historyTabPagerAdapter = new HistoryTabPagerAdapter(this);
+        historyViewPager.setAdapter(historyTabPagerAdapter);
+        
+        // Connect TabLayout with ViewPager2
+        new TabLayoutMediator(historyTabLayout, historyViewPager, (tab, position) -> {
+            tab.setText(historyTabPagerAdapter.getTabTitle(position));
+        }).attach();
     }
     
     private void setupBottomNavigation() {
@@ -91,20 +135,20 @@ public class DashboardActivity extends AppCompatActivity {
     }
     
     private void showHomeContent() {
-        userInfoTextView.setVisibility(View.VISIBLE);
-        historyContentTextView.setVisibility(View.GONE);
+        homeContentLayout.setVisibility(View.VISIBLE);
+        historyContentLayout.setVisibility(View.GONE);
         settingsContentTextView.setVisibility(View.GONE);
     }
     
     private void showHistoryContent() {
-        userInfoTextView.setVisibility(View.GONE);
-        historyContentTextView.setVisibility(View.VISIBLE);
+        homeContentLayout.setVisibility(View.GONE);
+        historyContentLayout.setVisibility(View.VISIBLE);
         settingsContentTextView.setVisibility(View.GONE);
     }
     
     private void showSettingsContent() {
-        userInfoTextView.setVisibility(View.GONE);
-        historyContentTextView.setVisibility(View.GONE);
+        homeContentLayout.setVisibility(View.GONE);
+        historyContentLayout.setVisibility(View.GONE);
         settingsContentTextView.setVisibility(View.VISIBLE);
     }
 } 
