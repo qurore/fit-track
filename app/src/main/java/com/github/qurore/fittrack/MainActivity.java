@@ -1,5 +1,6 @@
 package com.github.qurore.fittrack;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -61,14 +62,12 @@ public class MainActivity extends AppCompatActivity {
                         // Fetch user profile
                         fetchUserProfile(accessToken);
                         
-                        // Update UI
-                        runOnUiThread(() -> {
-                            loginButton.setVisibility(View.GONE);
-                            logoutButton.setVisibility(View.VISIBLE);
-                            Toast.makeText(MainActivity.this, 
-                                    "Login successful!", 
-                                    Toast.LENGTH_SHORT).show();
-                        });
+                        // Launch the Dashboard Activity
+                        Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
+                        startActivity(dashboardIntent);
+                        
+                        // Optionally finish the login activity if you don't want to return to it on back press
+                        // finish();
                     }
 
                     @Override
@@ -96,12 +95,15 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "Auth0 Profile - Name: " + name + ", Email: " + email);
                         
                         runOnUiThread(() -> {
-                            // Add explicit null check
-                            if (name != null && email != null) {
-                                userProfileTextView.setText(String.format("Name: %s\nEmail: %s", name, email));
-                            } else {
-                                userProfileTextView.setText("Profile received but some data is missing");
-                            }
+                            // Create intent with user data and launch dashboard
+                            // without updating MainActivity UI
+                            Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
+                            dashboardIntent.putExtra("USER_NAME", name);
+                            dashboardIntent.putExtra("USER_EMAIL", email);
+                            startActivity(dashboardIntent);
+                            
+                            // Optionally finish MainActivity to prevent returning to login screen on back press
+                            // finish();
                         });
                     }
 
