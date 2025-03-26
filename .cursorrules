@@ -152,3 +152,5 @@ The following features involve higher implementation complexity and may not be c
 -	User Authentication: Implementation of secure login system using commercial Identity Provider (IDP)
 -	Cloud Storage: Data management and storage solution using MongoDB Atlas
 -	Smart Recommendations: "Workout of the Day" suggestions powered by cloud backend services
+
+Base Color: 0f7670
