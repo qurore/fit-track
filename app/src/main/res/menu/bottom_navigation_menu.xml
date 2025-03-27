@@ -5,11 +5,11 @@
         android:icon="@android:drawable/ic_menu_compass"
         android:title="Home" />
     <item
+        android:id="@+id/navigation_workout"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="Workout" />
+    <item
         android:id="@+id/navigation_history"
         android:icon="@android:drawable/ic_menu_recent_history"
         android:title="History" />
-    <item
-        android:id="@+id/navigation_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
-        android:title="Settings" />
 </menu> 

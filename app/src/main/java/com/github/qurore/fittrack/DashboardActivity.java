@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,9 +17,9 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private TextView settingsContentTextView;
     private TextView headerUsernameTextView;
     private Button logoutButton;
+    private ImageButton settingsButton;
     private String userName;
     private BottomNavigationView bottomNavigationView;
     
@@ -45,9 +46,9 @@ public class DashboardActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         
         // Initialize views
-        settingsContentTextView = findViewById(R.id.settingsContentTextView);
         headerUsernameTextView = findViewById(R.id.headerUsernameTextView);
         logoutButton = findViewById(R.id.logoutButton);
+        settingsButton = findViewById(R.id.settingsButton);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         
         // Initialize Home content views
@@ -77,6 +78,12 @@ public class DashboardActivity extends AppCompatActivity {
             intent.putExtra("LOGOUT", true);
             startActivity(intent);
             finish();
+        });
+
+        // Set up settings button
+        settingsButton.setOnClickListener(v -> {
+            // Show settings content
+            showSettingsContent();
         });
         
         // Set up tabs
@@ -117,13 +124,14 @@ public class DashboardActivity extends AppCompatActivity {
                 // Show home content, hide others
                 showHomeContent();
                 return true;
+            } else if (itemId == R.id.navigation_workout) {
+                // Show workout content (to be implemented)
+                // For now, show home content
+                showHomeContent();
+                return true;
             } else if (itemId == R.id.navigation_history) {
                 // Show history content, hide others
                 showHistoryContent();
-                return true;
-            } else if (itemId == R.id.navigation_settings) {
-                // Show settings content, hide others
-                showSettingsContent();
                 return true;
             }
             
@@ -137,18 +145,16 @@ public class DashboardActivity extends AppCompatActivity {
     private void showHomeContent() {
         homeContentLayout.setVisibility(View.VISIBLE);
         historyContentLayout.setVisibility(View.GONE);
-        settingsContentTextView.setVisibility(View.GONE);
     }
     
     private void showHistoryContent() {
         homeContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.VISIBLE);
-        settingsContentTextView.setVisibility(View.GONE);
     }
     
     private void showSettingsContent() {
-        homeContentLayout.setVisibility(View.GONE);
-        historyContentLayout.setVisibility(View.GONE);
-        settingsContentTextView.setVisibility(View.VISIBLE);
+        // To be implemented
+        // For now, just show a toast message
+        android.widget.Toast.makeText(this, "Settings clicked", android.widget.Toast.LENGTH_SHORT).show();
     }
 } 

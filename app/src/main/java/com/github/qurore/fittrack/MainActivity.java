@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView userProfileTextView;
     private Button loginButton;
     private Button logoutButton;
+    private ImageButton settingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +42,17 @@ public class MainActivity extends AppCompatActivity {
         userProfileTextView = findViewById(R.id.userProfileTextView);
         loginButton = findViewById(R.id.loginButton);
         logoutButton = findViewById(R.id.logoutButton);
+        settingsButton = findViewById(R.id.settingsButton);
         
         loginButton.setOnClickListener(v -> login());
         logoutButton.setOnClickListener(v -> logout());
+        settingsButton.setOnClickListener(v -> {
+            Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
+        });
         
-        // Initially hide logout button
+        // Initially hide logout and settings buttons
         logoutButton.setVisibility(View.GONE);
+        settingsButton.setVisibility(View.GONE);
         
         // Check if we need to logout (coming from DashboardActivity)
         if (getIntent().getBooleanExtra("LOGOUT", false)) {
@@ -136,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                             userProfileTextView.setText("");
                             loginButton.setVisibility(View.VISIBLE);
                             logoutButton.setVisibility(View.GONE);
+                            settingsButton.setVisibility(View.GONE);
                         });
                     }
 
