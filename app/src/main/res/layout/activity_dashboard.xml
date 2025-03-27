@@ -45,7 +45,8 @@
                 android:layout_marginEnd="16dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Settings"
-                android:src="@android:drawable/ic_menu_preferences" />
+                android:src="@drawable/ic_settings_24"
+                android:tint="@android:color/white" />
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
