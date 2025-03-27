@@ -49,11 +49,24 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Home content with tabs -->
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- Home content -->
+    <include
         android:id="@+id/homeContentLayout"
+        layout="@layout/layout_home_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <!-- Workout content with tabs -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/workoutContentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -107,7 +120,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- History content with tabs -->
+    <!-- History content -->
     <include
         android:id="@+id/historyContentLayout"
         layout="@layout/layout_history_content"
@@ -131,5 +144,5 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:menu="@menu/bottom_navigation_menu" />
-    
+
 </androidx.constraintlayout.widget.ConstraintLayout> 

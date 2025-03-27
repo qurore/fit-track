@@ -16,7 +16,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // MongoDB Realm repository
         maven { url = uri("https://jitpack.io") }
     }
 }

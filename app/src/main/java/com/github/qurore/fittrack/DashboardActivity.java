@@ -9,11 +9,23 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -24,7 +36,18 @@ public class DashboardActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     
     // Home content
-    private ConstraintLayout homeContentLayout;
+    private View homeContentLayout;
+    private TextView profileName;
+    private TextView profileTitle;
+    private TextView profileInitials;
+    private TextView levelValue;
+    private BarChart activityChart;
+    private TextView workoutDaysValue;
+    private TextView caloriesValue;
+    private RecyclerView recentWorkoutsList;
+    
+    // Workout content
+    private ConstraintLayout workoutContentLayout;
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private TabPagerAdapter tabPagerAdapter;
@@ -53,8 +76,19 @@ public class DashboardActivity extends AppCompatActivity {
         
         // Initialize Home content views
         homeContentLayout = findViewById(R.id.homeContentLayout);
-        tabLayout = findViewById(R.id.tabLayout);
-        viewPager = findViewById(R.id.viewPager);
+        profileName = homeContentLayout.findViewById(R.id.profileName);
+        profileTitle = homeContentLayout.findViewById(R.id.profileTitle);
+        profileInitials = homeContentLayout.findViewById(R.id.profileInitials);
+        levelValue = homeContentLayout.findViewById(R.id.levelValue);
+        activityChart = homeContentLayout.findViewById(R.id.activityChart);
+        workoutDaysValue = homeContentLayout.findViewById(R.id.workoutDaysValue);
+        caloriesValue = homeContentLayout.findViewById(R.id.caloriesValue);
+        recentWorkoutsList = homeContentLayout.findViewById(R.id.recentWorkoutsList);
+        
+        // Initialize Workout content views
+        workoutContentLayout = findViewById(R.id.workoutContentLayout);
+        tabLayout = workoutContentLayout.findViewById(R.id.tabLayout);
+        viewPager = workoutContentLayout.findViewById(R.id.viewPager);
         
         // Initialize History content views
         historyContentLayout = findViewById(R.id.historyContentLayout);
@@ -64,16 +98,37 @@ public class DashboardActivity extends AppCompatActivity {
         // Get user data from intent
         userName = getIntent().getStringExtra("USER_NAME");
         
-        // Display username in header
+        // Display username in header and profile
         if (userName != null) {
             headerUsernameTextView.setText(userName);
-        } else {
-            headerUsernameTextView.setText("User");
+            profileName.setText(userName);
+            
+            // Set initials
+            String[] nameParts = userName.split(" ");
+            String initials = "";
+            if (nameParts.length > 0) {
+                initials += nameParts[0].charAt(0);
+                if (nameParts.length > 1) {
+                    initials += nameParts[nameParts.length - 1].charAt(0);
+                }
+            }
+            profileInitials.setText(initials.toUpperCase());
         }
+        
+        // Set up profile data
+        profileTitle.setText("Fitness Enthusiast");
+        levelValue.setText("8");
+        workoutDaysValue.setText("24");
+        caloriesValue.setText("8,540");
+        
+        // Set up activity chart
+        setupActivityChart();
+        
+        // Set up recent workouts
+        setupRecentWorkouts();
         
         // Set up logout button
         logoutButton.setOnClickListener(v -> {
-            // Return to MainActivity and trigger logout
             Intent intent = new Intent(DashboardActivity.this, MainActivity.class);
             intent.putExtra("LOGOUT", true);
             startActivity(intent);
@@ -82,16 +137,68 @@ public class DashboardActivity extends AppCompatActivity {
 
         // Set up settings button
         settingsButton.setOnClickListener(v -> {
-            // Show settings content
             showSettingsContent();
         });
         
-        // Set up tabs
+        // Set up tabs for workout page
         setupTabs();
         setupHistoryTabs();
         
         // Set up bottom navigation
         setupBottomNavigation();
+    }
+    
+    private void setupActivityChart() {
+        // Sample data
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        entries.add(new BarEntry(0, 2));
+        entries.add(new BarEntry(1, 4));
+        entries.add(new BarEntry(2, 3));
+        entries.add(new BarEntry(3, 5));
+        entries.add(new BarEntry(4, 2));
+        entries.add(new BarEntry(5, 4));
+        entries.add(new BarEntry(6, 3));
+
+        BarDataSet dataSet = new BarDataSet(entries, "Workouts");
+        dataSet.setColor(getResources().getColor(R.color.colorPrimary));
+
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.5f);
+
+        activityChart.setData(barData);
+        activityChart.getDescription().setEnabled(false);
+        activityChart.getLegend().setEnabled(false);
+        activityChart.setDrawGridBackground(false);
+        activityChart.setDrawBorders(false);
+
+        // Customize X axis
+        String[] days = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        XAxis xAxis = activityChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(days));
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f);
+
+        // Customize Y axis
+        activityChart.getAxisLeft().setDrawGridLines(false);
+        activityChart.getAxisRight().setEnabled(false);
+
+        activityChart.invalidate();
+    }
+    
+    private void setupRecentWorkouts() {
+        // Set up RecyclerView
+        recentWorkoutsList.setLayoutManager(new LinearLayoutManager(this));
+        
+        // Sample data
+        List<RecentWorkout> workouts = Arrays.asList(
+            new RecentWorkout("Upper Body", "Today • 45 min"),
+            new RecentWorkout("Cardio", "Yesterday • 30 min"),
+            new RecentWorkout("Leg Day", "2 days ago • 60 min")
+        );
+        
+        RecentWorkoutsAdapter adapter = new RecentWorkoutsAdapter(workouts);
+        recentWorkoutsList.setAdapter(adapter);
     }
     
     private void setupTabs() {
@@ -121,16 +228,12 @@ public class DashboardActivity extends AppCompatActivity {
             int itemId = item.getItemId();
             
             if (itemId == R.id.navigation_home) {
-                // Show home content, hide others
                 showHomeContent();
                 return true;
             } else if (itemId == R.id.navigation_workout) {
-                // Show workout content (to be implemented)
-                // For now, show home content
-                showHomeContent();
+                showWorkoutContent();
                 return true;
             } else if (itemId == R.id.navigation_history) {
-                // Show history content, hide others
                 showHistoryContent();
                 return true;
             }
@@ -144,17 +247,82 @@ public class DashboardActivity extends AppCompatActivity {
     
     private void showHomeContent() {
         homeContentLayout.setVisibility(View.VISIBLE);
+        workoutContentLayout.setVisibility(View.GONE);
+        historyContentLayout.setVisibility(View.GONE);
+    }
+    
+    private void showWorkoutContent() {
+        homeContentLayout.setVisibility(View.GONE);
+        workoutContentLayout.setVisibility(View.VISIBLE);
         historyContentLayout.setVisibility(View.GONE);
     }
     
     private void showHistoryContent() {
         homeContentLayout.setVisibility(View.GONE);
+        workoutContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.VISIBLE);
     }
     
     private void showSettingsContent() {
         // To be implemented
-        // For now, just show a toast message
         android.widget.Toast.makeText(this, "Settings clicked", android.widget.Toast.LENGTH_SHORT).show();
+    }
+    
+    // Data class for recent workouts
+    private static class RecentWorkout {
+        String name;
+        String time;
+        
+        RecentWorkout(String name, String time) {
+            this.name = name;
+            this.time = time;
+        }
+    }
+    
+    // Adapter for recent workouts
+    private class RecentWorkoutsAdapter extends RecyclerView.Adapter<RecentWorkoutsAdapter.ViewHolder> {
+        private List<RecentWorkout> workouts;
+        
+        RecentWorkoutsAdapter(List<RecentWorkout> workouts) {
+            this.workouts = workouts;
+        }
+        
+        @Override
+        public ViewHolder onCreateViewHolder(android.view.ViewGroup parent, int viewType) {
+            View view = getLayoutInflater().inflate(R.layout.item_recent_workout, parent, false);
+            return new ViewHolder(view);
+        }
+        
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            RecentWorkout workout = workouts.get(position);
+            holder.workoutName.setText(workout.name);
+            holder.workoutTime.setText(workout.time);
+            
+            holder.detailsButton.setOnClickListener(v -> {
+                // Handle workout details click
+                android.widget.Toast.makeText(DashboardActivity.this, 
+                    "Viewing details for " + workout.name, 
+                    android.widget.Toast.LENGTH_SHORT).show();
+            });
+        }
+        
+        @Override
+        public int getItemCount() {
+            return workouts.size();
+        }
+        
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView workoutName;
+            TextView workoutTime;
+            Button detailsButton;
+            
+            ViewHolder(View itemView) {
+                super(itemView);
+                workoutName = itemView.findViewById(R.id.workoutName);
+                workoutTime = itemView.findViewById(R.id.workoutTime);
+                detailsButton = itemView.findViewById(R.id.detailsButton);
+            }
+        }
     }
 } 
