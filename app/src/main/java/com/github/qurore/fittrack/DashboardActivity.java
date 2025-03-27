@@ -61,6 +61,9 @@ public class DashboardActivity extends AppCompatActivity {
     private TabLayout historyTabLayout;
     private ViewPager2 historyViewPager;
     private HistoryTabPagerAdapter historyTabPagerAdapter;
+    
+    // Settings content
+    private View settingsContentLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +104,9 @@ public class DashboardActivity extends AppCompatActivity {
         historyContentLayout = findViewById(R.id.historyContentLayout);
         historyTabLayout = historyContentLayout.findViewById(R.id.historyTabLayout);
         historyViewPager = historyContentLayout.findViewById(R.id.historyViewPager);
+        
+        // Initialize Settings content view
+        settingsContentLayout = findViewById(R.id.settingsContentLayout);
         
         // Get user data from intent
         userName = getIntent().getStringExtra("USER_NAME");
@@ -260,6 +266,7 @@ public class DashboardActivity extends AppCompatActivity {
         workoutContentLayout.setVisibility(View.GONE);
         workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.GONE);
+        settingsContentLayout.setVisibility(View.GONE);
     }
     
     private void showWorkoutContent() {
@@ -267,6 +274,7 @@ public class DashboardActivity extends AppCompatActivity {
         workoutContentLayout.setVisibility(View.VISIBLE);
         workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.GONE);
+        settingsContentLayout.setVisibility(View.GONE);
     }
     
     private void showWorkoutHistoryContent() {
@@ -274,6 +282,7 @@ public class DashboardActivity extends AppCompatActivity {
         workoutContentLayout.setVisibility(View.GONE);
         workoutHistoryContentLayout.setVisibility(View.VISIBLE);
         historyContentLayout.setVisibility(View.GONE);
+        settingsContentLayout.setVisibility(View.GONE);
         
         // Load the WorkoutHistoryFragment if it's not already added
         if (getSupportFragmentManager().findFragmentById(R.id.workoutHistoryContentLayout) == null) {
@@ -288,11 +297,29 @@ public class DashboardActivity extends AppCompatActivity {
         workoutContentLayout.setVisibility(View.GONE);
         workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.VISIBLE);
+        settingsContentLayout.setVisibility(View.GONE);
     }
     
     private void showSettingsContent() {
-        // Placeholder for settings screen
-        Toast.makeText(this, "Settings coming soon", Toast.LENGTH_SHORT).show();
+        homeContentLayout.setVisibility(View.GONE);
+        workoutContentLayout.setVisibility(View.GONE);
+        workoutHistoryContentLayout.setVisibility(View.GONE);
+        historyContentLayout.setVisibility(View.GONE);
+        settingsContentLayout.setVisibility(View.VISIBLE);
+        
+        // Load the SettingsFragment if it's not already added
+        if (getSupportFragmentManager().findFragmentById(R.id.settingsContentLayout) == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.settingsContentLayout, SettingsFragment.newInstance())
+                    .commit();
+        }
+        
+        // Unselect all bottom navigation items
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
+        for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
+            bottomNavigationView.getMenu().getItem(i).setChecked(false);
+        }
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
     }
     
     // Data class for recent workouts
