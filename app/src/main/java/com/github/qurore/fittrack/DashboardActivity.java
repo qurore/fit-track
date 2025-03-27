@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -52,7 +53,10 @@ public class DashboardActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private TabPagerAdapter tabPagerAdapter;
     
-    // History content
+    // Workout History content
+    private View workoutHistoryContentLayout;
+    
+    // Statistics content (renamed from History)
     private View historyContentLayout;
     private TabLayout historyTabLayout;
     private ViewPager2 historyViewPager;
@@ -90,7 +94,10 @@ public class DashboardActivity extends AppCompatActivity {
         tabLayout = workoutContentLayout.findViewById(R.id.tabLayout);
         viewPager = workoutContentLayout.findViewById(R.id.viewPager);
         
-        // Initialize History content views
+        // Initialize Workout History content views
+        workoutHistoryContentLayout = findViewById(R.id.workoutHistoryContentLayout);
+        
+        // Initialize Statistics content views (renamed from History)
         historyContentLayout = findViewById(R.id.historyContentLayout);
         historyTabLayout = historyContentLayout.findViewById(R.id.historyTabLayout);
         historyViewPager = historyContentLayout.findViewById(R.id.historyViewPager);
@@ -234,7 +241,10 @@ public class DashboardActivity extends AppCompatActivity {
                 showWorkoutContent();
                 return true;
             } else if (itemId == R.id.navigation_history) {
-                showHistoryContent();
+                showWorkoutHistoryContent();
+                return true;
+            } else if (itemId == R.id.navigation_statistics) {
+                showStatisticsContent();
                 return true;
             }
             
@@ -248,24 +258,41 @@ public class DashboardActivity extends AppCompatActivity {
     private void showHomeContent() {
         homeContentLayout.setVisibility(View.VISIBLE);
         workoutContentLayout.setVisibility(View.GONE);
+        workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.GONE);
     }
     
     private void showWorkoutContent() {
         homeContentLayout.setVisibility(View.GONE);
         workoutContentLayout.setVisibility(View.VISIBLE);
+        workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.GONE);
     }
     
-    private void showHistoryContent() {
+    private void showWorkoutHistoryContent() {
         homeContentLayout.setVisibility(View.GONE);
         workoutContentLayout.setVisibility(View.GONE);
+        workoutHistoryContentLayout.setVisibility(View.VISIBLE);
+        historyContentLayout.setVisibility(View.GONE);
+        
+        // Load the WorkoutHistoryFragment if it's not already added
+        if (getSupportFragmentManager().findFragmentById(R.id.workoutHistoryContentLayout) == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.workoutHistoryContentLayout, WorkoutHistoryFragment.newInstance())
+                    .commit();
+        }
+    }
+    
+    private void showStatisticsContent() {
+        homeContentLayout.setVisibility(View.GONE);
+        workoutContentLayout.setVisibility(View.GONE);
+        workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.VISIBLE);
     }
     
     private void showSettingsContent() {
-        // To be implemented
-        android.widget.Toast.makeText(this, "Settings clicked", android.widget.Toast.LENGTH_SHORT).show();
+        // Placeholder for settings screen
+        Toast.makeText(this, "Settings coming soon", Toast.LENGTH_SHORT).show();
     }
     
     // Data class for recent workouts
