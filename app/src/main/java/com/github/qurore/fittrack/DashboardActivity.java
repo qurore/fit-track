@@ -203,6 +203,12 @@ public class DashboardActivity extends AppCompatActivity {
         // Set up RecyclerView
         recentWorkoutsList.setLayoutManager(new LinearLayoutManager(this));
         
+        // Set up View All button click listener
+        View viewAllWorkouts = homeContentLayout.findViewById(R.id.viewAllWorkouts);
+        viewAllWorkouts.setOnClickListener(v -> {
+            bottomNavigationView.setSelectedItemId(R.id.navigation_history);
+        });
+        
         // Sample data
         List<RecentWorkout> workouts = Arrays.asList(
             new RecentWorkout("Upper Body", "Today • 45 min"),
