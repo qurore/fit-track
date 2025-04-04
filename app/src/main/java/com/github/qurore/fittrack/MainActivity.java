@@ -80,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
         // Check if user is signed in (non-null)
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
+        
+        // If user is already logged in, navigate to Dashboard
+        if (currentUser != null && !getIntent().getBooleanExtra("LOGOUT", false)) {
+            // Launch Dashboard
+            Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
+            dashboardIntent.putExtra("USER_NAME", currentUser.getDisplayName());
+            dashboardIntent.putExtra("USER_EMAIL", currentUser.getEmail());
+            startActivity(dashboardIntent);
+        }
     }
     
     private void signIn() {
