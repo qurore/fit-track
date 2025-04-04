@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">FitTrack</string>
     
-    <!-- Auth0 Configuration -->
-    <string name="com_auth0_domain">dev-znugt5ze1nrvsdkw.us.auth0.com</string>
-    <string name="com_auth0_client_id">Lv6DOj0urxvEWTR8FY07AY0DQqDT9DHi</string>
-    <string name="com_auth0_scheme">com.github.qurore.fittrack</string>
+    <!-- Firebase Authentication strings -->
+    <string name="welcome_user">Welcome, %1$s!</string>
+    <string name="sign_in">Sign in with Google</string>
+    <string name="sign_out">Sign out</string>
 </resources>

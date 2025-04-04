@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -14,10 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
-        // Auth0 configuration
-        manifestPlaceholders["auth0Domain"] = "@string/com_auth0_domain"
-        manifestPlaceholders["auth0Scheme"] = "@string/com_auth0_scheme"
     }
 
     buildTypes {
@@ -59,8 +56,10 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     
-    // Auth0 dependencies
-    implementation("com.auth0.android:auth0:2.10.2")
+    // Replace Auth0 with Firebase Authentication
+    implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
     
     // Edge-to-Edge support
     implementation("androidx.core:core:1.12.0")
