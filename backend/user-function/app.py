@@ -41,20 +41,7 @@ def lambda_handler(event, context):
             user_data = {
                 '_id': user_id,  # Use Firebase UID as MongoDB _id
                 'email': event['requestContext']['authorizer']['email'],
-                'name': event['requestContext']['authorizer']['name'],
-                'profile': {
-                    'height': body.get('height'),
-                    'weight': body.get('weight'),
-                    'birthDate': body.get('birthDate'),
-                    'gender': body.get('gender'),
-                    'fitnessLevel': body.get('fitnessLevel', 'beginner'),
-                    'goals': body.get('goals', [])
-                },
-                'settings': {
-                    'notifications': body.get('notifications', True),
-                    'units': body.get('units', 'metric'),
-                    'language': body.get('language', 'en')
-                }
+                'name': event['requestContext']['authorizer']['name']
             }
             
             # Upsert the user document
@@ -84,4 +71,4 @@ def lambda_handler(event, context):
         return {
             'statusCode': 500,
             'body': json.dumps({'message': 'Internal server error'})
-        } 
+        }
