@@ -14,6 +14,22 @@ Globals:
       - x86_64
 
 Resources:
+  FirebaseAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: auth-function/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          FIREBASE_CREDENTIALS: !Sub '{{resolve:secretsmanager:${FirebaseCredentialsSecret}}}'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${FirebaseCredentialsSecret}'
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -25,7 +41,13 @@ Resources:
           Properties:
             Path: /hello
             Method: get
-            # We will add the authorizer here later
+            Auth:
+              Authorizer: FirebaseAuthorizer
+
+Parameters:
+  FirebaseCredentialsSecret:
+    Type: String
+    Description: Name of the AWS Secrets Manager secret containing Firebase credentials
 
 Outputs:
   HelloWorldApi:

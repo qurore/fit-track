@@ -14,6 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -23,18 +27,26 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DashboardActivity extends AppCompatActivity {
 
     private TextView headerUsernameTextView;
     private Button logoutButton;
+    private Button testButton;
     private ImageButton settingsButton;
     private String userName;
     private BottomNavigationView bottomNavigationView;
+    private RequestQueue requestQueue;
     
     // Home content
     private View homeContentLayout;
@@ -70,6 +82,9 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
         
+        // Initialize Volley RequestQueue
+        requestQueue = Volley.newRequestQueue(this);
+        
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -78,6 +93,7 @@ public class DashboardActivity extends AppCompatActivity {
         // Initialize views
         headerUsernameTextView = findViewById(R.id.headerUsernameTextView);
         logoutButton = findViewById(R.id.logoutButton);
+        testButton = findViewById(R.id.testButton);
         settingsButton = findViewById(R.id.settingsButton);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         
@@ -151,6 +167,11 @@ public class DashboardActivity extends AppCompatActivity {
         // Set up settings button
         settingsButton.setOnClickListener(v -> {
             showSettingsContent();
+        });
+        
+        // Set up test button
+        testButton.setOnClickListener(v -> {
+            makeApiCall();
         });
         
         // Set up tabs for workout page
@@ -326,6 +347,55 @@ public class DashboardActivity extends AppCompatActivity {
             bottomNavigationView.getMenu().getItem(i).setChecked(false);
         }
         bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+    }
+    
+    private void makeApiCall() {
+        String url = "https://uxghxn9zf4.execute-api.us-west-2.amazonaws.com/Prod/hello";
+        
+        // Get the current Firebase user
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get the ID token
+        currentUser.getIdToken(true)
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    String idToken = task.getResult().getToken();
+                    
+                    // Create request headers
+                    HashMap<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "Bearer " + idToken);
+                    
+                    JsonObjectRequest request = new JsonObjectRequest(
+                        Request.Method.GET,
+                        url,
+                        null,
+                        response -> {
+                            try {
+                                String message = response.getString("message");
+                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                            } catch (Exception e) {
+                                Toast.makeText(this, "Error parsing response", Toast.LENGTH_SHORT).show();
+                            }
+                        },
+                        error -> {
+                            Toast.makeText(this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    ) {
+                        @Override
+                        public Map<String, String> getHeaders() {
+                            return headers;
+                        }
+                    };
+                    
+                    requestQueue.add(request);
+                } else {
+                    Toast.makeText(this, "Error getting authentication token", Toast.LENGTH_SHORT).show();
+                }
+            });
     }
     
     // Data class for recent workouts
