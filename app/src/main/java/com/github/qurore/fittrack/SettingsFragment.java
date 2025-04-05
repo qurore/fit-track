@@ -30,7 +30,7 @@ public class SettingsFragment extends Fragment {
     private Button testSetButton;
     private RequestQueue requestQueue;
 
-    private static final String API_BASE_URL = "https://uxghxn9zf4.execute-api.us-west-2.amazonaws.com/Prod";
+    private static final String API_BASE_URL = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod";
 
     public static SettingsFragment newInstance() {
         return new SettingsFragment();

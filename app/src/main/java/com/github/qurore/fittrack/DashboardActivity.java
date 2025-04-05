@@ -350,7 +350,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
     
     private void makeApiCall() {
-        String url = "https://uxghxn9zf4.execute-api.us-west-2.amazonaws.com/Prod/hello";
+        String url = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/hello";
         
         // Get the current Firebase user
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
