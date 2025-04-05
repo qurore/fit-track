@@ -63,3 +63,26 @@ Thumbs.db
 
 # ignore `workbench` folder
 workbench/
+
+# Firebase Cloud Functions specific ignores
+functions/node_modules/
+functions/logs/
+functions/*.log
+functions/dist/
+functions/build/
+# IDE files within functions (can sometimes be created)
+functions/.idea/
+functions/*.iml
+# Firebase emulator data within functions
+functions/.firebase/emulators*.*
+functions/firebase-debug.log
+functions/firestore-debug.log
+functions/ui-debug.log
+functions/pubsub-debug.log
+functions/database-debug.log
+# Environment variables within functions
+functions/.env
+functions/.env.*
+functions/*.env
+# Local config within functions
+functions/*.local

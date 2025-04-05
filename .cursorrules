@@ -26,6 +26,12 @@ include: app/src/main/assets/auth0_configuration.json
 include: app/src/test/java/com/github/qurore/fittrack/**/*.java
 include: app/src/androidTest/java/com/github/qurore/fittrack/**/*.java
 
+# Include Firebase Cloud Functions file
+!!IMPORTANT!!
+The directory of functions is not in the root directory, on the ./functions/ directory.
+include: functions/index.js
+include: functions/package.json
+
 # Exclude generated and build directories (align with .gitignore)
 exclude: .gradle/
 exclude: app/build/
