@@ -59,6 +59,12 @@ exclude: *.ap_
 exclude: .DS_Store
 exclude: Thumbs.db
 
+# SAM related files
+include: backend/*
+NOTE: managed secrets on Secret Manager
+- FitTrackMongoDBURI: mongodb+srv://<username>:<password>@fittrack.oaulk.mongodb.net/fittrack
+- FitTrackFirebaseCredentials: Stored in backend/fittrack-6775b-firebase-adminsdk.json
+
 # Basic Tree structure
 .
 ├── app

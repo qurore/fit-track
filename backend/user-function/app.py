@@ -6,7 +6,7 @@ from bson import json_util
 
 # Initialize MongoDB client
 client = MongoClient(os.environ['MONGODB_URI'], server_api=ServerApi('1'))
-db = client.fitTrack
+db = client.fittrack
 users_collection = db.users
 
 def parse_json(data):
