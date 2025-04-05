@@ -40,6 +40,33 @@ Resources:
                 - 'secretsmanager:GetSecretValue'
               Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${FirebaseCredentialsSecret}'
 
+  UserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: user-function/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          MONGODB_URI: !Sub '{{resolve:secretsmanager:${MongoDBURISecret}}}'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${MongoDBURISecret}'
+      Events:
+        GetUser:
+          Type: Api
+          Properties:
+            Path: /user
+            Method: get
+        CreateUpdateUser:
+          Type: Api
+          Properties:
+            Path: /user
+            Method: post
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -56,11 +83,17 @@ Parameters:
   FirebaseCredentialsSecret:
     Type: String
     Description: Name of the AWS Secrets Manager secret containing Firebase credentials
+  MongoDBURISecret:
+    Type: String
+    Description: Name of the AWS Secrets Manager secret containing MongoDB URI
 
 Outputs:
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello"
+  UserApi:
+    Description: "API Gateway endpoint URL for Prod stage for User function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/user"
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn

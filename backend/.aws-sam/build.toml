@@ -18,4 +18,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["FirebaseAuthorizerFunction"]
 
+[function_build_definitions.9e94672b-c935-4e82-902a-6fc4011af591]
+codeuri = "/Users/ryshiro/Library/CloudStorage/Dropbox/FitTrack/backend/user-function"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["UserFunction"]
+
 [layer_build_definitions]
