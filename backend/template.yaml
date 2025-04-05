@@ -12,9 +12,19 @@ Globals:
     Runtime: python3.9 # Or choose another runtime like nodejs18.x, java11 etc.
     Architectures:
       - x86_64
+  Api:
+    Auth:
+      DefaultAuthorizer: FirebaseAuthorizer
+      Authorizers:
+        FirebaseAuthorizer:
+          FunctionArn: !GetAtt FirebaseAuthorizerFunction.Arn
+          FunctionPayloadType: REQUEST
+          Identity:
+            Headers:
+              - Authorization
 
 Resources:
-  FirebaseAuthorizer:
+  FirebaseAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: auth-function/
@@ -41,8 +51,6 @@ Resources:
           Properties:
             Path: /hello
             Method: get
-            Auth:
-              Authorizer: FirebaseAuthorizer
 
 Parameters:
   FirebaseCredentialsSecret:
