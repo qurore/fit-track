@@ -203,6 +203,14 @@ public class MainActivity extends AppCompatActivity {
             userData,
             response -> {
                 Log.d(TAG, "Initial user data set successfully");
+                // User created, parse the response and launch dashboard
+                try {
+                    // The API now returns the full user document on creation (201)
+                    launchDashboard(user, response); 
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing user data after creation", e);
+                    // Handle error - maybe show a message to the user or retry?
+                }
             },
             error -> {
                 Log.e(TAG, "Error setting initial user data: " + error.getMessage());

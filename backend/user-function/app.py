@@ -56,15 +56,23 @@ def lambda_handler(event, context):
                 upsert=True
             )
             
-            status_code = 201 if result.upserted_id else 200
-            return {
-                'statusCode': status_code,
-                'body': json.dumps({
-                    'message': 'User created' if result.upserted_id else 'User updated',
-                    'userId': user_id,
-                    'name': user_data['name']
-                })
-            }
+            if result.upserted_id:
+                # User was created (upserted), fetch the newly created document
+                created_user = users_collection.find_one({'_id': user_id})
+                return {
+                    'statusCode': 201,
+                    'body': json.dumps(parse_json(created_user)) # Return the full user data
+                }
+            else:
+                # User was updated (not upserted)
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({
+                        'message': 'User updated',
+                        'userId': user_id,
+                        'name': user_data['name'] # Or fetch and return updated doc if needed
+                    })
+                }
             
         elif http_method == 'PATCH':
             # Update specific user fields

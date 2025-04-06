@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.util.Log;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,12 @@ import org.json.JSONObject;
 
 public class SettingsFragment extends Fragment {
     private static final String TAG = "SettingsFragment";
+
+    // Define the interface
+    public interface OnNameUpdatedListener {
+        void onNameUpdated(String newName);
+    }
+    private OnNameUpdatedListener listener;
 
     private View editProfileOption;
     private View aboutOption;
@@ -44,6 +51,22 @@ public class SettingsFragment extends Fragment {
         args.putString(ARG_USERNAME, username);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (context instanceof OnNameUpdatedListener) {
+            listener = (OnNameUpdatedListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnNameUpdatedListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null; // Prevent memory leaks
     }
 
     @Override
@@ -153,9 +176,9 @@ public class SettingsFragment extends Fragment {
                                 Toast.makeText(getContext(), "Name updated successfully", Toast.LENGTH_SHORT).show();
                                 // Update the local username variable
                                 currentUserName = newName;
-                                // Refresh the activity to show the new name
-                                if (getActivity() instanceof DashboardActivity) {
-                                    getActivity().recreate();
+                                // Notify the activity
+                                if (listener != null) {
+                                    listener.onNameUpdated(newName);
                                 }
                             },
                             error -> {

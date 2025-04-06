@@ -39,7 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DashboardActivity extends AppCompatActivity {
+// Implement the listener interface
+public class DashboardActivity extends AppCompatActivity implements SettingsFragment.OnNameUpdatedListener {
 
     private TextView headerUsernameTextView;
     private Button logoutButton;
@@ -133,24 +134,7 @@ public class DashboardActivity extends AppCompatActivity {
             Log.d("DashboardActivity", "Parsed user name: " + userName);
             
             // Display username in header and profile
-            if (userName != null && !userName.isEmpty()) {
-                headerUsernameTextView.setText(userName);
-                Log.d("DashboardActivity", "Set headerUsernameTextView text to: " + userName);
-                profileName.setText(userName);
-                
-                // Set initials
-                String[] nameParts = userName.split(" ");
-                String initials = "";
-                if (nameParts.length > 0) {
-                    initials += nameParts[0].charAt(0);
-                    if (nameParts.length > 1) {
-                        initials += nameParts[nameParts.length - 1].charAt(0);
-                    }
-                }
-                profileInitials.setText(initials.toUpperCase());
-            } else {
-                Log.e("DashboardActivity", "Username is null or empty");
-            }
+            updateUserDisplay(userName);
         } catch (Exception e) {
             Log.e("DashboardActivity", "Error processing user data", e);
             Toast.makeText(this, "Error loading user data", Toast.LENGTH_SHORT).show();
@@ -187,6 +171,36 @@ public class DashboardActivity extends AppCompatActivity {
         
         // Set up bottom navigation
         setupBottomNavigation();
+    }
+    
+    // Method to update username display
+    private void updateUserDisplay(String name) {
+        if (name != null && !name.isEmpty()) {
+            this.userName = name; // Update the instance variable
+            headerUsernameTextView.setText(name);
+            Log.d("DashboardActivity", "Set headerUsernameTextView text to: " + name);
+
+            profileName.setText(name);
+            Log.d("DashboardActivity", "Set profileName text to: " + name);
+
+            // Set initials
+            String[] nameParts = name.split(" ");
+            String initials = "";
+            if (nameParts.length > 0 && !nameParts[0].isEmpty()) {
+                initials += nameParts[0].charAt(0);
+                if (nameParts.length > 1 && !nameParts[nameParts.length - 1].isEmpty()) {
+                    initials += nameParts[nameParts.length - 1].charAt(0);
+                }
+            }
+            profileInitials.setText(initials.toUpperCase());
+            Log.d("DashboardActivity", "Set profileInitials text to: " + initials.toUpperCase());
+        } else {
+            Log.e("DashboardActivity", "Username is null or empty in updateUserDisplay");
+            // Optionally set default values or show an error state
+            headerUsernameTextView.setText("User");
+            profileName.setText("User");
+            profileInitials.setText("U");
+        }
     }
     
     private void setupActivityChart() {
@@ -412,5 +426,26 @@ public class DashboardActivity extends AppCompatActivity {
                 detailsButton = itemView.findViewById(R.id.detailsButton);
             }
         }
+    }
+
+    // Implementation of the interface method
+    @Override
+    public void onNameUpdated(String newName) {
+        Log.d("DashboardActivity", "onNameUpdated called with new name: " + newName);
+        updateUserDisplay(newName);
+
+        // Optionally, you might want to navigate away from the settings screen
+        // or provide some other visual feedback here.
+        // For now, just updating the display fields.
+
+        // If the settings fragment is still visible, we might want to update its internal state too,
+        // although SettingsFragment already updates its 'currentUserName'.
+        // If needed, find the fragment and update it:
+        /*
+        SettingsFragment settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentById(R.id.settingsContentLayout);
+        if (settingsFragment != null) {
+            // Potentially call a method on settingsFragment if it needs to react further
+        }
+        */
     }
 } 
