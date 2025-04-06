@@ -186,9 +186,17 @@ public class MainActivity extends AppCompatActivity {
                         },
                         error -> {
                             if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
-                                // User doesn't exist, set initial data
+                                // User doesn't exist, set initial data - get a fresh token first
                                 Log.d(TAG, "User not found, creating initial data");
-                                setInitialUserData(user, idToken);
+                                user.getIdToken(true)
+                                    .addOnCompleteListener(newTokenTask -> {
+                                        if (newTokenTask.isSuccessful()) {
+                                            String newIdToken = newTokenTask.getResult().getToken();
+                                            setInitialUserData(user, newIdToken);
+                                        } else {
+                                            Log.e(TAG, "Error getting fresh token for initial data");
+                                        }
+                                    });
                             } else {
                                 // Other error occurred
                                 Log.e(TAG, "Error getting user data: " + error.getMessage());
@@ -212,13 +220,11 @@ public class MainActivity extends AppCompatActivity {
     
     private void setInitialUserData(FirebaseUser user, String idToken) {
         String url = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/user";
-        
+
         // Create initial user data
         JSONObject userData = new JSONObject();
         try {
-            // Add user profile data
-            userData.put("email", user.getEmail());
-            userData.put("name", user.getDisplayName());
+            // In the future, we will add more fields to the user data
         } catch (Exception e) {
             Log.e(TAG, "Error creating initial user data", e);
             return;
