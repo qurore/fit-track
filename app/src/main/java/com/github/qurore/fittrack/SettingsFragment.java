@@ -145,12 +145,7 @@ public class SettingsFragment extends Fragment {
                     // Sample user data
                     JSONObject userData = new JSONObject();
                     try {
-                        userData.put("height", 175);
-                        userData.put("weight", 70);
-                        userData.put("birthDate", "1990-01-01");
-                        userData.put("gender", "male");
-                        userData.put("fitnessLevel", "intermediate");
-                        userData.put("goals", new String[]{"weight_loss", "muscle_gain"});
+                        // In the future, we will add more fields to the user data
                     } catch (Exception e) {
                         Toast.makeText(getContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
                         return;

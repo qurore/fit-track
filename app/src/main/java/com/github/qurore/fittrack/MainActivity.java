@@ -216,13 +216,6 @@ public class MainActivity extends AppCompatActivity {
         // Create initial user data
         JSONObject userData = new JSONObject();
         try {
-            userData.put("height", 170); // Default height in cm
-            userData.put("weight", 70);  // Default weight in kg
-            userData.put("birthDate", "2000-01-01"); // Default birth date
-            userData.put("gender", "not_specified");
-            userData.put("fitnessLevel", "beginner");
-            userData.put("goals", new String[]{"general_fitness"});
-            
             // Add user profile data
             userData.put("email", user.getEmail());
             userData.put("name", user.getDisplayName());
