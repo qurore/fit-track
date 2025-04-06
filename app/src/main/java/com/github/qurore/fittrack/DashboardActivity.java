@@ -2,6 +2,7 @@ package com.github.qurore.fittrack;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -122,24 +123,37 @@ public class DashboardActivity extends AppCompatActivity {
         // Initialize Settings content view
         settingsContentLayout = findViewById(R.id.settingsContentLayout);
         
-        // Get user data from intent
-        userName = getIntent().getStringExtra("USER_NAME");
-        
-        // Display username in header and profile
-        if (userName != null) {
-            headerUsernameTextView.setText(userName);
-            profileName.setText(userName);
+        // Get user data and update UI
+        try {
+            String userDataStr = getIntent().getStringExtra("USER_DATA");
+            Log.d("DashboardActivity", "Received user data: " + userDataStr);
             
-            // Set initials
-            String[] nameParts = userName.split(" ");
-            String initials = "";
-            if (nameParts.length > 0) {
-                initials += nameParts[0].charAt(0);
-                if (nameParts.length > 1) {
-                    initials += nameParts[nameParts.length - 1].charAt(0);
+            JSONObject userData = new JSONObject(userDataStr);
+            userName = userData.getString("name");
+            Log.d("DashboardActivity", "Parsed user name: " + userName);
+            
+            // Display username in header and profile
+            if (userName != null && !userName.isEmpty()) {
+                headerUsernameTextView.setText(userName);
+                Log.d("DashboardActivity", "Set headerUsernameTextView text to: " + userName);
+                profileName.setText(userName);
+                
+                // Set initials
+                String[] nameParts = userName.split(" ");
+                String initials = "";
+                if (nameParts.length > 0) {
+                    initials += nameParts[0].charAt(0);
+                    if (nameParts.length > 1) {
+                        initials += nameParts[nameParts.length - 1].charAt(0);
+                    }
                 }
+                profileInitials.setText(initials.toUpperCase());
+            } else {
+                Log.e("DashboardActivity", "Username is null or empty");
             }
-            profileInitials.setText(initials.toUpperCase());
+        } catch (Exception e) {
+            Log.e("DashboardActivity", "Error processing user data", e);
+            Toast.makeText(this, "Error loading user data", Toast.LENGTH_SHORT).show();
         }
         
         // Set up profile data

@@ -93,12 +93,6 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null && !getIntent().getBooleanExtra("LOGOUT", false)) {
             // Handle user data in MongoDB
             handleUserData(currentUser);
-            
-            // Launch Dashboard
-            Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
-            dashboardIntent.putExtra("USER_NAME", currentUser.getDisplayName());
-            dashboardIntent.putExtra("USER_EMAIL", currentUser.getEmail());
-            startActivity(dashboardIntent);
         }
     }
     
@@ -128,41 +122,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
-    private void firebaseAuthWithGoogle(String idToken) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success
-                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
-                            
-                            // Handle user data in MongoDB
-                            if (user != null) {
-                                handleUserData(user);
-                            }
-                            
-                            // Launch Dashboard
-                            Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
-                            if (user != null) {
-                                dashboardIntent.putExtra("USER_NAME", user.getDisplayName());
-                                dashboardIntent.putExtra("USER_EMAIL", user.getEmail());
-                            }
-                            startActivity(dashboardIntent);
-                        } else {
-                            // Sign in failed
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(MainActivity.this, "Authentication Failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            updateUI(null);
-                        }
-                    }
-                });
-    }
-    
     private void handleUserData(FirebaseUser user) {
         // Initialize Volley RequestQueue if not already initialized
         if (requestQueue == null) {
@@ -181,8 +140,9 @@ public class MainActivity extends AppCompatActivity {
                         url,
                         null,
                         response -> {
-                            // User exists, no need to set data
+                            // User exists, launch dashboard with user data
                             Log.d(TAG, "User data retrieved successfully");
+                            launchDashboard(user, response);
                         },
                         error -> {
                             if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
@@ -216,6 +176,13 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Error getting authentication token");
                 }
             });
+    }
+    
+    private void launchDashboard(FirebaseUser user, JSONObject userData) {
+        Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
+        dashboardIntent.putExtra("USER_DATA", userData.toString());
+        startActivity(dashboardIntent);
+        finish();
     }
     
     private void setInitialUserData(FirebaseUser user, String idToken) {
@@ -278,5 +245,32 @@ public class MainActivity extends AppCompatActivity {
             logoutButton.setVisibility(View.GONE);
             settingsButton.setVisibility(View.GONE);
         }
+    }
+    
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                            
+                            // Handle user data in MongoDB
+                            if (user != null) {
+                                handleUserData(user);
+                            }
+                        } else {
+                            // Sign in failed
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(MainActivity.this, "Authentication Failed.",
+                                    Toast.LENGTH_SHORT).show();
+                            updateUI(null);
+                        }
+                    }
+                });
     }
 }
