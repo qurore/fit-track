@@ -40,9 +40,14 @@ def lambda_handler(event, context):
             # Add required fields
             user_data = {
                 '_id': user_id,  # Use Firebase UID as MongoDB _id
-                'email': event['requestContext']['authorizer']['email'],
-                'name': event['requestContext']['authorizer']['name']
+                'email': event['requestContext']['authorizer']['email']
             }
+            
+            # If name is provided in the request body, use it
+            if 'name' in body:
+                user_data['name'] = body['name']
+            else:
+                user_data['name'] = event['requestContext']['authorizer']['name']
             
             # Upsert the user document
             result = users_collection.update_one(
@@ -56,9 +61,40 @@ def lambda_handler(event, context):
                 'statusCode': status_code,
                 'body': json.dumps({
                     'message': 'User created' if result.upserted_id else 'User updated',
-                    'userId': user_id
+                    'userId': user_id,
+                    'name': user_data['name']
                 })
             }
+            
+        elif http_method == 'PATCH':
+            # Update specific user fields
+            body = json.loads(event['body'])
+            
+            if 'name' not in body:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps({'message': 'Name field is required'})
+                }
+            
+            # Update only the name field
+            result = users_collection.update_one(
+                {'_id': user_id},
+                {'$set': {'name': body['name']}}
+            )
+            
+            if result.modified_count > 0:
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({
+                        'message': 'Name updated successfully',
+                        'name': body['name']
+                    })
+                }
+            else:
+                return {
+                    'statusCode': 404,
+                    'body': json.dumps({'message': 'User not found'})
+                }
             
         else:
             return {

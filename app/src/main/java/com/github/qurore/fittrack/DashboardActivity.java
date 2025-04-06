@@ -344,7 +344,7 @@ public class DashboardActivity extends AppCompatActivity {
         // Load the SettingsFragment if it's not already added
         if (getSupportFragmentManager().findFragmentById(R.id.settingsContentLayout) == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.settingsContentLayout, SettingsFragment.newInstance())
+                    .replace(R.id.settingsContentLayout, SettingsFragment.newInstance(userName))
                     .commit();
         }
         
