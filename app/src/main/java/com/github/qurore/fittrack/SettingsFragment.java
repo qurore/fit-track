@@ -107,7 +107,11 @@ public class SettingsFragment extends Fragment {
                             }
                         },
                         error -> {
-                            Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                                Toast.makeText(getContext(), "No user data found. Please set your information using Test Set.", Toast.LENGTH_LONG).show();
+                            } else {
+                                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
                         }
                     ) {
                         @Override

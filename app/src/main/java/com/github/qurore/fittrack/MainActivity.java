@@ -24,6 +24,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import org.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -35,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private Button loginButton;
     private Button logoutButton;
     private ImageButton settingsButton;
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,8 +89,11 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         updateUI(currentUser);
         
-        // If user is already logged in, navigate to Dashboard
+        // If user is already logged in, handle user data and navigate to Dashboard
         if (currentUser != null && !getIntent().getBooleanExtra("LOGOUT", false)) {
+            // Handle user data in MongoDB
+            handleUserData(currentUser);
+            
             // Launch Dashboard
             Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
             dashboardIntent.putExtra("USER_NAME", currentUser.getDisplayName());
@@ -129,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             updateUI(user);
                             
+                            // Handle user data in MongoDB
+                            if (user != null) {
+                                handleUserData(user);
+                            }
+                            
                             // Launch Dashboard
                             Intent dashboardIntent = new Intent(MainActivity.this, DashboardActivity.class);
                             if (user != null) {
@@ -145,6 +161,96 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+    
+    private void handleUserData(FirebaseUser user) {
+        // Initialize Volley RequestQueue if not already initialized
+        if (requestQueue == null) {
+            requestQueue = Volley.newRequestQueue(this);
+        }
+        
+        // First, try to get user data
+        user.getIdToken(true)
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    String idToken = task.getResult().getToken();
+                    String url = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/user";
+                    
+                    JsonObjectRequest getRequest = new JsonObjectRequest(
+                        Request.Method.GET,
+                        url,
+                        null,
+                        response -> {
+                            // User exists, no need to set data
+                            Log.d(TAG, "User data retrieved successfully");
+                        },
+                        error -> {
+                            if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                                // User doesn't exist, set initial data
+                                Log.d(TAG, "User not found, creating initial data");
+                                setInitialUserData(user, idToken);
+                            } else {
+                                // Other error occurred
+                                Log.e(TAG, "Error getting user data: " + error.getMessage());
+                            }
+                        }
+                    ) {
+                        @Override
+                        public Map<String, String> getHeaders() {
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Authorization", "Bearer " + idToken);
+                            return headers;
+                        }
+                    };
+                    
+                    requestQueue.add(getRequest);
+                } else {
+                    Log.e(TAG, "Error getting authentication token");
+                }
+            });
+    }
+    
+    private void setInitialUserData(FirebaseUser user, String idToken) {
+        String url = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/user";
+        
+        // Create initial user data
+        JSONObject userData = new JSONObject();
+        try {
+            userData.put("height", 170); // Default height in cm
+            userData.put("weight", 70);  // Default weight in kg
+            userData.put("birthDate", "2000-01-01"); // Default birth date
+            userData.put("gender", "not_specified");
+            userData.put("fitnessLevel", "beginner");
+            userData.put("goals", new String[]{"general_fitness"});
+            
+            // Add user profile data
+            userData.put("email", user.getEmail());
+            userData.put("name", user.getDisplayName());
+        } catch (Exception e) {
+            Log.e(TAG, "Error creating initial user data", e);
+            return;
+        }
+        
+        JsonObjectRequest setRequest = new JsonObjectRequest(
+            Request.Method.POST,
+            url,
+            userData,
+            response -> {
+                Log.d(TAG, "Initial user data set successfully");
+            },
+            error -> {
+                Log.e(TAG, "Error setting initial user data: " + error.getMessage());
+            }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + idToken);
+                return headers;
+            }
+        };
+        
+        requestQueue.add(setRequest);
     }
     
     private void signOut() {
