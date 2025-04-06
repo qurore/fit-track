@@ -5,168 +5,41 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/tabContentTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Grid of training buttons - Row 1 -->
-    <Button
-        android:id="@+id/trainingButton1"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 1"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/trainingButton2"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tabContentTitle" />
-
-    <TextView
-        android:id="@+id/trainingLabel1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 1"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton1"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton1"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton1" />
-
-    <Button
-        android:id="@+id/trainingButton2"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 2"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/trainingButton3"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/trainingButton1"
-        app:layout_constraintTop_toTopOf="@+id/trainingButton1" />
-
-    <TextView
-        android:id="@+id/trainingLabel2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 2"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton2"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton2"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton2" />
-
-    <Button
-        android:id="@+id/trainingButton3"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 3"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/trainingButton2"
-        app:layout_constraintTop_toTopOf="@+id/trainingButton2" />
-
-    <TextView
-        android:id="@+id/trainingLabel3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 3"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton3"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton3"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton3" />
-
-    <!-- Grid of training buttons - Row 2 -->
-    <Button
-        android:id="@+id/trainingButton4"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 4"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton1"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton1"
-        app:layout_constraintTop_toBottomOf="@+id/trainingLabel1" />
-
-    <TextView
-        android:id="@+id/trainingLabel4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 4"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton4"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton4"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton4" />
-
-    <Button
-        android:id="@+id/trainingButton5"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 5"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton2"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton2"
-        app:layout_constraintTop_toTopOf="@+id/trainingButton4" />
-
-    <TextView
-        android:id="@+id/trainingLabel5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 5"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton5"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton5"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton5" />
-
-    <Button
-        android:id="@+id/trainingButton6"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:background="@drawable/circular_button_background"
-        android:text="Training 6"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton3"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton3"
-        app:layout_constraintTop_toTopOf="@+id/trainingButton5" />
-
-    <TextView
-        android:id="@+id/trainingLabel6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Training 6"
-        app:layout_constraintEnd_toEndOf="@+id/trainingButton6"
-        app:layout_constraintStart_toStartOf="@+id/trainingButton6"
-        app:layout_constraintTop_toBottomOf="@+id/trainingButton6" />
-
-    <TextView
-        android:id="@+id/tabContentDescription"
+        android:id="@+id/selectExerciseTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:text="Content will be implemented soon"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"
+        android:text="Select Exercise"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/trainingLabel5" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/selectExerciseSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:text="Choose a category, then select an exercise"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectExerciseTitle" />
+
+    <ExpandableListView
+        android:id="@+id/exerciseListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:childDivider="@android:color/transparent"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="1dp"
+        android:groupIndicator="@null"
+        android:listSelector="@android:color/transparent"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectExerciseSubtitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

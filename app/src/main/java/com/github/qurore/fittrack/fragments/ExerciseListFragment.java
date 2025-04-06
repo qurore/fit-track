@@ -1,17 +1,16 @@
-package com.github.qurore.fittrack;
+package com.github.qurore.fittrack.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.github.qurore.fittrack.R;
 import com.github.qurore.fittrack.adapters.ExerciseListAdapter;
 
 import java.util.ArrayList;
@@ -19,57 +18,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TabContentFragment extends Fragment {
-    private static final String ARG_TITLE = "title";
-    
+public class ExerciseListFragment extends Fragment {
     private ExpandableListView exerciseListView;
     private ExerciseListAdapter adapter;
     private List<String> categories;
     private Map<String, List<String>> exercises;
 
-    public static TabContentFragment newInstance(String title) {
-        TabContentFragment fragment = new TabContentFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_TITLE, title);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_tab_content, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        
-        String title = getArguments() != null ? getArguments().getString(ARG_TITLE) : "Tab";
-        
-        TextView titleTextView = view.findViewById(R.id.selectExerciseTitle);
-        titleTextView.setText("Select Exercise");
-        
-        TextView subtitleTextView = view.findViewById(R.id.selectExerciseSubtitle);
-        subtitleTextView.setText("Choose a category, then select an exercise");
-        
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_tab_content, container, false);
         exerciseListView = view.findViewById(R.id.exerciseListView);
         
-        if (title.equals("Strength")) {
-            initializeStrengthData();
-        } else {
-            // Initialize other tab types here
-            initializeGenericData(title);
-        }
-        
+        initializeData();
         setupListView();
+        
+        return view;
     }
-    
-    private void initializeStrengthData() {
+
+    private void initializeData() {
         categories = new ArrayList<>();
         exercises = new HashMap<>();
 
-        // Add strength training categories
+        // Add categories
         categories.add("Chest");
         categories.add("Back");
         categories.add("Legs");
@@ -128,25 +99,7 @@ public class TabContentFragment extends Fragment {
         coreExercises.add("Side Plank");
         exercises.put("Core", coreExercises);
     }
-    
-    private void initializeGenericData(String title) {
-        categories = new ArrayList<>();
-        exercises = new HashMap<>();
-        
-        // Add generic categories for other tab types
-        for (int i = 1; i <= 6; i++) {
-            String category = "Training " + i;
-            categories.add(category);
-            
-            // Add generic exercises
-            List<String> genericExercises = new ArrayList<>();
-            for (int j = 1; j <= 3; j++) {
-                genericExercises.add(title + " Exercise " + j);
-            }
-            exercises.put(category, genericExercises);
-        }
-    }
-    
+
     private void setupListView() {
         adapter = new ExerciseListAdapter(requireContext(), categories, exercises);
         exerciseListView.setAdapter(adapter);
@@ -155,9 +108,7 @@ public class TabContentFragment extends Fragment {
         exerciseListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
             String category = categories.get(groupPosition);
             String exercise = exercises.get(category).get(childPosition);
-            Toast.makeText(getContext(), 
-                    category + " - " + exercise + " selected", 
-                    Toast.LENGTH_SHORT).show();
+            // TODO: Handle exercise selection
             return true;
         });
 
