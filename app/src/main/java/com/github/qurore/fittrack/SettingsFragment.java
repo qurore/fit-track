@@ -94,8 +94,6 @@ public class SettingsFragment extends Fragment {
         editProfileOption = view.findViewById(R.id.editProfileOption);
         aboutOption = view.findViewById(R.id.aboutOption);
         termsOption = view.findViewById(R.id.termsOption);
-        testGetButton = view.findViewById(R.id.testGetButton);
-        testSetButton = view.findViewById(R.id.testSetButton);
         
         // Set up click listeners
         setupClickListeners();
@@ -115,10 +113,6 @@ public class SettingsFragment extends Fragment {
             Intent intent = new Intent(getActivity(), TermsPrivacyActivity.class);
             startActivity(intent);
         });
-
-        // Test buttons
-        testGetButton.setOnClickListener(v -> makeGetRequest());
-        testSetButton.setOnClickListener(v -> makeSetRequest());
     }
 
     private void showEditNameDialog() {
@@ -197,107 +191,6 @@ public class SettingsFragment extends Fragment {
                     } catch (Exception e) {
                         Toast.makeText(getContext(), "Error creating request: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(getContext(), "Error getting authentication token", Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void makeGetRequest() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        currentUser.getIdToken(true)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    String idToken = task.getResult().getToken();
-                    String url = API_BASE_URL + "/user";
-                    
-                    JsonObjectRequest request = new JsonObjectRequest(
-                        Request.Method.GET,
-                        url,
-                        null,
-                        response -> {
-                            try {
-                                Toast.makeText(getContext(), "User data: " + response.toString(), Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
-                                Toast.makeText(getContext(), "Error parsing response", Toast.LENGTH_SHORT).show();
-                            }
-                        },
-                        error -> {
-                            if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
-                                Toast.makeText(getContext(), "No user data found. Please set your information using Test Set.", Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    ) {
-                        @Override
-                        public java.util.Map<String, String> getHeaders() {
-                            java.util.Map<String, String> headers = new java.util.HashMap<>();
-                            headers.put("Authorization", "Bearer " + idToken);
-                            return headers;
-                        }
-                    };
-                    
-                    requestQueue.add(request);
-                } else {
-                    Toast.makeText(getContext(), "Error getting authentication token", Toast.LENGTH_SHORT).show();
-                }
-            });
-    }
-
-    private void makeSetRequest() {
-        Log.d(TAG, "Making set request");
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        currentUser.getIdToken(true)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    String idToken = task.getResult().getToken();
-                    String url = API_BASE_URL + "/user";
-                    
-                    // Sample user data
-                    JSONObject userData = new JSONObject();
-                    try {
-                        // In the future, we will add more fields to the user data
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Error creating request data", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    
-                    JsonObjectRequest request = new JsonObjectRequest(
-                        Request.Method.POST,
-                        url,
-                        userData,
-                        response -> {
-                            try {
-                                String message = response.getString("message");
-                                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-                            } catch (Exception e) {
-                                Toast.makeText(getContext(), "Error parsing response", Toast.LENGTH_SHORT).show();
-                            }
-                        },
-                        error -> {
-                            Toast.makeText(getContext(), "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    ) {
-                        @Override
-                        public java.util.Map<String, String> getHeaders() {
-                            java.util.Map<String, String> headers = new java.util.HashMap<>();
-                            headers.put("Authorization", "Bearer " + idToken);
-                            return headers;
-                        }
-                    };
-                    
-                    requestQueue.add(request);
                 } else {
                     Toast.makeText(getContext(), "Error getting authentication token", Toast.LENGTH_SHORT).show();
                 }
