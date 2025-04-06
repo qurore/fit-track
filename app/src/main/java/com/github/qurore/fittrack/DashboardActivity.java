@@ -42,7 +42,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     private TextView headerUsernameTextView;
     private Button logoutButton;
-    private Button testButton;
     private ImageButton settingsButton;
     private String userName;
     private BottomNavigationView bottomNavigationView;
@@ -93,7 +92,6 @@ public class DashboardActivity extends AppCompatActivity {
         // Initialize views
         headerUsernameTextView = findViewById(R.id.headerUsernameTextView);
         logoutButton = findViewById(R.id.logoutButton);
-        testButton = findViewById(R.id.testButton);
         settingsButton = findViewById(R.id.settingsButton);
         bottomNavigationView = findViewById(R.id.bottomNavigation);
         
@@ -167,11 +165,6 @@ public class DashboardActivity extends AppCompatActivity {
         // Set up settings button
         settingsButton.setOnClickListener(v -> {
             showSettingsContent();
-        });
-        
-        // Set up test button
-        testButton.setOnClickListener(v -> {
-            makeApiCall();
         });
         
         // Set up tabs for workout page
@@ -347,55 +340,6 @@ public class DashboardActivity extends AppCompatActivity {
             bottomNavigationView.getMenu().getItem(i).setChecked(false);
         }
         bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
-    }
-    
-    private void makeApiCall() {
-        String url = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/hello";
-        
-        // Get the current Firebase user
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Get the ID token
-        currentUser.getIdToken(true)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    String idToken = task.getResult().getToken();
-                    
-                    // Create request headers
-                    HashMap<String, String> headers = new HashMap<>();
-                    headers.put("Authorization", "Bearer " + idToken);
-                    
-                    JsonObjectRequest request = new JsonObjectRequest(
-                        Request.Method.GET,
-                        url,
-                        null,
-                        response -> {
-                            try {
-                                String message = response.getString("message");
-                                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-                            } catch (Exception e) {
-                                Toast.makeText(this, "Error parsing response", Toast.LENGTH_SHORT).show();
-                            }
-                        },
-                        error -> {
-                            Toast.makeText(this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    ) {
-                        @Override
-                        public Map<String, String> getHeaders() {
-                            return headers;
-                        }
-                    };
-                    
-                    requestQueue.add(request);
-                } else {
-                    Toast.makeText(this, "Error getting authentication token", Toast.LENGTH_SHORT).show();
-                }
-            });
     }
     
     // Data class for recent workouts
