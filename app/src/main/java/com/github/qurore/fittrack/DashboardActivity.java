@@ -51,10 +51,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     // Home content
     private View homeContentLayout;
-    private TextView profileName;
-    private TextView profileTitle;
-    private TextView profileInitials;
-    private TextView levelValue;
     private BarChart activityChart;
     private TextView workoutDaysValue;
     private TextView caloriesValue;
@@ -99,10 +95,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Initialize Home content views
         homeContentLayout = findViewById(R.id.homeContentLayout);
-        profileName = homeContentLayout.findViewById(R.id.profileName);
-        profileTitle = homeContentLayout.findViewById(R.id.profileTitle);
-        profileInitials = homeContentLayout.findViewById(R.id.profileInitials);
-        levelValue = homeContentLayout.findViewById(R.id.levelValue);
         activityChart = homeContentLayout.findViewById(R.id.activityChart);
         workoutDaysValue = homeContentLayout.findViewById(R.id.workoutDaysValue);
         caloriesValue = homeContentLayout.findViewById(R.id.caloriesValue);
@@ -133,16 +125,14 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
             userName = userData.getString("name");
             Log.d("DashboardActivity", "Parsed user name: " + userName);
             
-            // Display username in header and profile
-            updateUserDisplay(userName);
+            // Display username in header
+            headerUsernameTextView.setText(userName);
         } catch (Exception e) {
             Log.e("DashboardActivity", "Error processing user data", e);
             Toast.makeText(this, "Error loading user data", Toast.LENGTH_SHORT).show();
         }
         
-        // Set up profile data
-        profileTitle.setText("Fitness Enthusiast");
-        levelValue.setText("8");
+        // Set up workout days and calories values
         workoutDaysValue.setText("24");
         caloriesValue.setText("8,540");
         
@@ -171,36 +161,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Set up bottom navigation
         setupBottomNavigation();
-    }
-    
-    // Method to update username display
-    private void updateUserDisplay(String name) {
-        if (name != null && !name.isEmpty()) {
-            this.userName = name; // Update the instance variable
-            headerUsernameTextView.setText(name);
-            Log.d("DashboardActivity", "Set headerUsernameTextView text to: " + name);
-
-            profileName.setText(name);
-            Log.d("DashboardActivity", "Set profileName text to: " + name);
-
-            // Set initials
-            String[] nameParts = name.split(" ");
-            String initials = "";
-            if (nameParts.length > 0 && !nameParts[0].isEmpty()) {
-                initials += nameParts[0].charAt(0);
-                if (nameParts.length > 1 && !nameParts[nameParts.length - 1].isEmpty()) {
-                    initials += nameParts[nameParts.length - 1].charAt(0);
-                }
-            }
-            profileInitials.setText(initials.toUpperCase());
-            Log.d("DashboardActivity", "Set profileInitials text to: " + initials.toUpperCase());
-        } else {
-            Log.e("DashboardActivity", "Username is null or empty in updateUserDisplay");
-            // Optionally set default values or show an error state
-            headerUsernameTextView.setText("User");
-            profileName.setText("User");
-            profileInitials.setText("U");
-        }
     }
     
     private void setupActivityChart() {
@@ -432,7 +392,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     @Override
     public void onNameUpdated(String newName) {
         Log.d("DashboardActivity", "onNameUpdated called with new name: " + newName);
-        updateUserDisplay(newName);
+        headerUsernameTextView.setText(newName);
 
         // Optionally, you might want to navigate away from the settings screen
         // or provide some other visual feedback here.

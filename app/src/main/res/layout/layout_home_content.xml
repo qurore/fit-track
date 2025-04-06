@@ -5,92 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Profile Section -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/profileCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/profileInitials"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/circle_background"
-                android:gravity="center"
-                android:textColor="@android:color/white"
-                android:textSize="24sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="JD" />
-
-            <TextView
-                android:id="@+id/profileName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/profileInitials"
-                app:layout_constraintTop_toTopOf="@id/profileInitials"
-                tools:text="John Doe" />
-
-            <TextView
-                android:id="@+id/profileTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textColor="@android:color/darker_gray"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/profileInitials"
-                app:layout_constraintTop_toBottomOf="@id/profileName"
-                tools:text="Fitness Enthusiast" />
-
-            <TextView
-                android:id="@+id/levelLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Level"
-                android:textColor="@android:color/darker_gray"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/profileInitials" />
-
-            <TextView
-                android:id="@+id/levelValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@id/levelLabel"
-                app:layout_constraintStart_toEndOf="@id/levelLabel"
-                app:layout_constraintTop_toTopOf="@id/levelLabel"
-                tools:text="8" />
-
-            <ProgressBar
-                android:id="@+id/levelProgress"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:progress="75"
-                app:layout_constraintBottom_toBottomOf="@id/levelLabel"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/levelValue"
-                app:layout_constraintTop_toTopOf="@id/levelLabel" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
-
     <!-- Activity Chart Section -->
     <TextView
         android:id="@+id/activityTitle"
@@ -102,7 +16,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/profileCard" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
         android:id="@+id/weekSelector"
