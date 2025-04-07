@@ -172,17 +172,44 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Distance (km)"
+                android:layout_marginEnd="8dp"
+                android:hint="Distance"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/distanceUnitLayout"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/repsLayout">
+                app:layout_constraintTop_toBottomOf="@id/repsLayout"
+                app:layout_constraintHorizontal_weight="1">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/distanceInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Distance Unit Selector -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/distanceUnitLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/distanceLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/distanceLayout"
+                app:layout_constraintTop_toTopOf="@id/distanceLayout"
+                app:layout_constraintHorizontal_weight="1">
+
+                <AutoCompleteTextView
+                    android:id="@+id/distanceUnitDropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="km" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Notes Field (Common for all types) -->

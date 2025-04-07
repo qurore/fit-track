@@ -46,8 +46,10 @@ public class RecordExerciseActivity extends AppCompatActivity {
     private TextInputLayout weightLayout;
     private TextInputLayout repsLayout;
     private TextInputLayout distanceLayout;
+    private TextInputLayout distanceUnitLayout;
     private TextInputEditText durationInput;
     private AutoCompleteTextView durationUnitDropdown;
+    private AutoCompleteTextView distanceUnitDropdown;
     private TextInputEditText weightInput;
     private TextInputEditText repsInput;
     private TextInputEditText distanceInput;
@@ -88,8 +90,10 @@ public class RecordExerciseActivity extends AppCompatActivity {
         weightLayout = findViewById(R.id.weightLayout);
         repsLayout = findViewById(R.id.repsLayout);
         distanceLayout = findViewById(R.id.distanceLayout);
+        distanceUnitLayout = findViewById(R.id.distanceUnitLayout);
         durationInput = findViewById(R.id.durationInput);
         durationUnitDropdown = findViewById(R.id.durationUnitDropdown);
+        distanceUnitDropdown = findViewById(R.id.distanceUnitDropdown);
         weightInput = findViewById(R.id.weightInput);
         repsInput = findViewById(R.id.repsInput);
         distanceInput = findViewById(R.id.distanceInput);
@@ -98,6 +102,9 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
         // Set up duration unit dropdown
         setupDurationUnitDropdown();
+        
+        // Set up distance unit dropdown
+        setupDistanceUnitDropdown();
 
         // Get exercise details from intent
         String name = getIntent().getStringExtra(EXTRA_EXERCISE_NAME);
@@ -128,6 +135,18 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 units
         );
         durationUnitDropdown.setAdapter(adapter);
+        durationUnitDropdown.setText("minutes", false);
+    }
+
+    private void setupDistanceUnitDropdown() {
+        String[] units = new String[]{"km", "m"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                units
+        );
+        distanceUnitDropdown.setAdapter(adapter);
+        distanceUnitDropdown.setText("km", false);
     }
 
     private void showDatePicker() {
@@ -178,6 +197,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
         weightLayout.setVisibility(View.GONE);
         repsLayout.setVisibility(View.GONE);
         distanceLayout.setVisibility(View.GONE);
+        distanceUnitLayout.setVisibility(View.GONE);
 
         // Show relevant fields based on type
         switch (type) {
@@ -187,12 +207,24 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 break;
             case "Cardio":
                 distanceLayout.setVisibility(View.VISIBLE);
+                distanceUnitLayout.setVisibility(View.VISIBLE);
                 break;
             case "Flexibility":
             case "Functional":
                 // Only duration and notes are visible by default
                 break;
         }
+    }
+
+    private float getDistanceInMeters() {
+        if (distanceInput.getText().toString().isEmpty()) {
+            return 0;
+        }
+        float distance = Float.parseFloat(distanceInput.getText().toString());
+        if (distanceUnitDropdown.getText().toString().equals("km")) {
+            return distance * 1000; // Convert km to meters
+        }
+        return distance; // Already in meters
     }
 
     private void saveExercise(String type) {
@@ -237,8 +269,8 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
                     case "Cardio":
                         if (!distanceInput.getText().toString().isEmpty()) {
-                            float distance = Float.parseFloat(distanceInput.getText().toString());
-                            exerciseData.put("distance", distance);
+                            float distanceInMeters = getDistanceInMeters();
+                            exerciseData.put("distance", distanceInMeters);
                         }
                         break;
 
