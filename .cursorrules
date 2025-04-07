@@ -69,49 +69,35 @@ NOTE: managed secrets on Secret Manager
 data class StrengthExercise(
     val id: Long = 0,
     val exerciseName: String,               // Exercise name (bench press, squat, etc.)
-    val sets: Int,                          // Number of sets
-    val reps: Int,                          // Number of repetitions
-    val weight: Float,                      // Weight (kg)
-    val restTime: Int? = null,              // Rest time between sets (seconds)
-    val date: Long,                         // Date (timestamp)
+    val startTime: Long,                    // Start time (timestamp)
     val duration: Int? = null,              // Total duration (seconds)
+    val weight: Float,                      // Weight (kg)
+    val reps: Int,                          // Number of repetitions
     val notes: String? = null               // Notes/Additional information
 )
 
 data class CardioExercise(
     val id: Long = 0,
     val exerciseName: String,               // Exercise name (running, cycling, etc.)
+    val startTime: Long,                    // Start time (timestamp)
     val duration: Int,                      // Duration (seconds)
-    val distance: Float? = null,            // Distance (km/m)
-    val calories: Int? = null,              // Calories burned
-    val avgHeartRate: Int? = null,          // Average heart rate
-    val maxHeartRate: Int? = null,          // Maximum heart rate
-    val date: Long,                         // Date (timestamp)
-    val pace: Float? = null,                // Pace (minutes/km)
+    val distance: Float? = null,            // Distance (km/m))
     val notes: String? = null               // Notes/Additional information
 )
 
 data class FlexibilityExercise(
     val id: Long = 0,
     val exerciseName: String,               // Exercise name (hamstring stretch, etc.)
+    val startTime: Long,                    // Start time (timestamp)
     val duration: Int,                      // Stretch duration (seconds)
-    val sets: Int? = null,                  // Number of sets (if applicable)
-    val level: Int? = null,                 // Difficulty/Intensity level (1-5 etc.)
-    val range: Float? = null,               // Range of motion measurement (if applicable)
-    val date: Long,                         // Date (timestamp)
     val notes: String? = null               // Notes/Additional information
 )
 
 data class FunctionalExercise(
     val id: Long = 0,
     val exerciseName: String,               // Exercise name (plank, burpee, etc.)
+    val startTime: Long,                    // Start time (timestamp)
     val duration: Int,                      // Duration (seconds)
-    val sets: Int? = null,                  // Number of sets (if applicable)
-    val reps: Int? = null,                  // Number of repetitions (if applicable)
-    val restTime: Int? = null,              // Rest time (seconds)
-    val intensity: Int? = null,             // Intensity level (1-5 etc.)
-    val calories: Int? = null,              // Calories burned
-    val date: Long,                         // Date (timestamp)
     val notes: String? = null               // Notes/Additional information
 )
 
