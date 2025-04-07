@@ -164,6 +164,7 @@ public class TabContentFragment extends Fragment {
             Intent intent = new Intent(getContext(), RecordExerciseActivity.class);
             intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_NAME, exercise);
             intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_TYPE, getArguments().getString(ARG_TITLE));
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_SUBTYPE, category);
             startActivity(intent);
             return true;
         });

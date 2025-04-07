@@ -39,6 +39,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
     
     public static final String EXTRA_EXERCISE_NAME = "exercise_name";
     public static final String EXTRA_EXERCISE_TYPE = "exercise_type";
+    public static final String EXTRA_EXERCISE_SUBTYPE = "exercise_subtype";
 
     private TextView exerciseName;
     private Button datePickerButton;
@@ -109,9 +110,13 @@ public class RecordExerciseActivity extends AppCompatActivity {
         // Get exercise details from intent
         String name = getIntent().getStringExtra(EXTRA_EXERCISE_NAME);
         String type = getIntent().getStringExtra(EXTRA_EXERCISE_TYPE);
+        String subtype = getIntent().getStringExtra(EXTRA_EXERCISE_SUBTYPE);
 
-        // Set exercise name
+        // Set exercise name and update title with type and subtype
         exerciseName.setText(name);
+        TextView exerciseNameTitle = findViewById(R.id.exerciseNameTitle);
+        String titleText = type + " - " + subtype;
+        exerciseNameTitle.setText(titleText);
 
         // Show/hide fields based on exercise type
         setupFieldsForExerciseType(type);

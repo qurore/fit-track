@@ -30,8 +30,8 @@
                 android:id="@+id/exerciseNameTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Exercise"
-                android:textSize="24sp"
+                android:textColor="@android:color/black"
+                android:textSize="32sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
