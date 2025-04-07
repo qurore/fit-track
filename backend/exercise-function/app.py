@@ -1,31 +1,19 @@
-import json
 import os
+import json
 from datetime import datetime
 from typing import Dict, List, Optional
-
-import firebase_admin
-from firebase_admin import auth, credentials
 from pymongo import MongoClient
-from bson import ObjectId
-
-# Initialize Firebase Admin SDK
-if not firebase_admin._apps:
-    cred = credentials.Certificate('fittrack-6775b-firebase-adminsdk.json')
-    firebase_admin.initialize_app(cred)
+from pymongo.server_api import ServerApi
+from bson import ObjectId, json_util
 
 # Initialize MongoDB client
-mongo_uri = os.environ['MONGODB_URI']
-client = MongoClient(mongo_uri)
+client = MongoClient(os.environ['MONGODB_URI'], server_api=ServerApi('1'))
 db = client.fittrack
 exercises_collection = db.exercises
 
-def verify_firebase_token(token: str) -> Dict:
-    """Verify Firebase ID token and return user claims."""
-    try:
-        decoded_token = auth.verify_id_token(token)
-        return decoded_token
-    except Exception as e:
-        raise Exception(f"Invalid token: {str(e)}")
+def parse_json(data):
+    """Convert MongoDB BSON to JSON"""
+    return json.loads(json_util.dumps(data))
 
 def create_exercise(user_id: str, exercise_data: Dict) -> Dict:
     """Create a new exercise record."""
@@ -90,8 +78,7 @@ def update_exercise(user_id: str, exercise_id: str, exercise_data: Dict) -> Opti
             return None
 
         updated_doc = exercises_collection.find_one({"_id": ObjectId(exercise_id)})
-        updated_doc["_id"] = str(updated_doc["_id"])
-        return updated_doc
+        return parse_json(updated_doc)
     except Exception as e:
         raise Exception(f"Error updating exercise: {str(e)}")
 
@@ -102,26 +89,13 @@ def get_user_exercises(user_id: str, exercise_type: Optional[str] = None) -> Lis
         query["exercise_type"] = exercise_type
 
     exercises = list(exercises_collection.find(query))
-    for exercise in exercises:
-        exercise["_id"] = str(exercise["_id"])
-    return exercises
+    return parse_json(exercises)
 
 def lambda_handler(event, context):
     """Main Lambda handler function."""
     try:
-        # Extract authorization token
-        auth_token = event.get('headers', {}).get('Authorization', '').replace('Bearer ', '')
-        if not auth_token:
-            return {
-                'statusCode': 401,
-                'body': json.dumps({'error': 'No authorization token provided'})
-            }
-
-        # Verify token and get user claims
-        user_claims = verify_firebase_token(auth_token)
-        user_id = user_claims['uid']
-
-        # Process request based on HTTP method
+        # Get user ID from the authorizer context
+        user_id = event['requestContext']['authorizer']['uid']
         http_method = event['httpMethod']
         path_parameters = event.get('pathParameters', {})
         query_parameters = event.get('queryStringParameters', {})
@@ -132,7 +106,7 @@ def lambda_handler(event, context):
             result = create_exercise(user_id, body)
             return {
                 'statusCode': 201,
-                'body': json.dumps(result)
+                'body': json.dumps(parse_json(result))
             }
 
         elif http_method == 'PUT':
@@ -141,7 +115,7 @@ def lambda_handler(event, context):
             if not exercise_id:
                 return {
                     'statusCode': 400,
-                    'body': json.dumps({'error': 'Exercise ID is required'})
+                    'body': json.dumps({'message': 'Exercise ID is required'})
                 }
 
             body = json.loads(event['body'])
@@ -150,7 +124,7 @@ def lambda_handler(event, context):
             if result is None:
                 return {
                     'statusCode': 404,
-                    'body': json.dumps({'error': 'Exercise not found'})
+                    'body': json.dumps({'message': 'Exercise not found'})
                 }
 
             return {
@@ -170,11 +144,12 @@ def lambda_handler(event, context):
         else:
             return {
                 'statusCode': 405,
-                'body': json.dumps({'error': 'Method not allowed'})
+                'body': json.dumps({'message': 'Method not allowed'})
             }
 
     except Exception as e:
+        print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'message': 'Internal server error'})
         } 

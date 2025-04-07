@@ -7,6 +7,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,14 +17,26 @@ import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 
+import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class RecordExerciseActivity extends AppCompatActivity {
+    private static final String TAG = "RecordExerciseActivity";
+    private static final String API_URL = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/exercises";
+    
     public static final String EXTRA_EXERCISE_NAME = "exercise_name";
     public static final String EXTRA_EXERCISE_TYPE = "exercise_type";
 
@@ -45,10 +58,17 @@ public class RecordExerciseActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormat;
     private SimpleDateFormat timeFormat;
 
+    private RequestQueue requestQueue;
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_exercise);
+
+        // Initialize Firebase Auth and Volley RequestQueue
+        mAuth = FirebaseAuth.getInstance();
+        requestQueue = Volley.newRequestQueue(this);
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -182,51 +202,82 @@ public class RecordExerciseActivity extends AppCompatActivity {
         }
 
         // Get common field values
-        long startTime = selectedDateTime.getTimeInMillis();
+        final long startTime = selectedDateTime.getTimeInMillis();
+        final int duration = getDurationInSeconds();
+        final String notes = notesInput.getText().toString();
+        final String name = exerciseName.getText().toString();
+
+        try {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) {
+                Toast.makeText(this, "Please sign in to save exercises", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Prepare type-specific data before the async call
+            final JSONObject exerciseData = new JSONObject();
+            try {
+                exerciseData.put("exercise_type", type.toLowerCase());
+                exerciseData.put("exercise_name", name);
+                exerciseData.put("start_time", startTime);
+                exerciseData.put("duration", duration);
+                exerciseData.put("notes", notes);
+
+                // Add type-specific fields
+                switch (type) {
+                    case "Strength":
+                        if (!validateStrengthFields()) {
+                            return;
+                        }
+                        float weight = Float.parseFloat(weightInput.getText().toString());
+                        int reps = Integer.parseInt(repsInput.getText().toString());
+                        exerciseData.put("weight", weight);
+                        exerciseData.put("reps", reps);
+                        break;
+
+                    case "Cardio":
+                        if (!distanceInput.getText().toString().isEmpty()) {
+                            float distance = Float.parseFloat(distanceInput.getText().toString());
+                            exerciseData.put("distance", distance);
+                        }
+                        break;
+
+                    case "Flexibility":
+                    case "Functional":
+                        // No additional fields needed
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+                return;
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating exercise data", e);
+                Toast.makeText(this, "Error preparing exercise data", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Get the token and send the data
+            currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String idToken = task.getResult().getToken();
+                        sendExerciseData(exerciseData, idToken);
+                    } else {
+                        Toast.makeText(this, "Authentication error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error saving exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private int getDurationInSeconds() {
         int duration = Integer.parseInt(durationInput.getText().toString());
-        
-        // Convert duration to seconds if needed
         if (durationUnitDropdown.getText().toString().equals("minutes")) {
             duration *= 60;
         }
-        
-        String notes = notesInput.getText().toString();
-
-        try {
-            switch (type) {
-                case "Strength":
-                    if (!validateStrengthFields()) {
-                        return;
-                    }
-                    float weight = Float.parseFloat(weightInput.getText().toString());
-                    int reps = Integer.parseInt(repsInput.getText().toString());
-                    saveStrengthExercise(exerciseName.getText().toString(), startTime, duration, weight, reps, notes);
-                    break;
-
-                case "Cardio":
-                    Float distance = null;
-                    if (!distanceInput.getText().toString().isEmpty()) {
-                        distance = Float.parseFloat(distanceInput.getText().toString());
-                    }
-                    saveCardioExercise(exerciseName.getText().toString(), startTime, duration, distance, notes);
-                    break;
-
-                case "Flexibility":
-                    saveFlexibilityExercise(exerciseName.getText().toString(), startTime, duration, notes);
-                    break;
-
-                case "Functional":
-                    saveFunctionalExercise(exerciseName.getText().toString(), startTime, duration, notes);
-                    break;
-            }
-
-            // Show success message and finish activity
-            Toast.makeText(this, "Exercise saved successfully", Toast.LENGTH_SHORT).show();
-            finish();
-
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
-        }
+        return duration;
     }
 
     private boolean validateCommonFields() {
@@ -249,19 +300,30 @@ public class RecordExerciseActivity extends AppCompatActivity {
         return true;
     }
 
-    private void saveStrengthExercise(String name, long startTime, int duration, float weight, int reps, String notes) {
-        // TODO: Save to database
-    }
+    private void sendExerciseData(JSONObject exerciseData, String idToken) {
+        JsonObjectRequest request = new JsonObjectRequest(
+            Request.Method.POST,
+            API_URL,
+            exerciseData,
+            response -> {
+                Log.d(TAG, "Exercise saved successfully");
+                Toast.makeText(this, "Exercise saved successfully", Toast.LENGTH_SHORT).show();
+                finish();
+            },
+            error -> {
+                Log.e(TAG, "Error saving exercise: " + error.toString());
+                Toast.makeText(this, "Error saving exercise", Toast.LENGTH_SHORT).show();
+            }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + idToken);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
 
-    private void saveCardioExercise(String name, long startTime, int duration, Float distance, String notes) {
-        // TODO: Save to database
-    }
-
-    private void saveFlexibilityExercise(String name, long startTime, int duration, String notes) {
-        // TODO: Save to database
-    }
-
-    private void saveFunctionalExercise(String name, long startTime, int duration, String notes) {
-        // TODO: Save to database
+        requestQueue.add(request);
     }
 } 
