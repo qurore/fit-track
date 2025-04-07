@@ -2,11 +2,14 @@ package com.github.qurore.fittrack;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
@@ -31,6 +34,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
     private TextInputLayout repsLayout;
     private TextInputLayout distanceLayout;
     private TextInputEditText durationInput;
+    private AutoCompleteTextView durationUnitDropdown;
     private TextInputEditText weightInput;
     private TextInputEditText repsInput;
     private TextInputEditText distanceInput;
@@ -46,6 +50,12 @@ public class RecordExerciseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_exercise);
 
+        // Set up toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
         // Initialize date and time formats
         dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -59,11 +69,15 @@ public class RecordExerciseActivity extends AppCompatActivity {
         repsLayout = findViewById(R.id.repsLayout);
         distanceLayout = findViewById(R.id.distanceLayout);
         durationInput = findViewById(R.id.durationInput);
+        durationUnitDropdown = findViewById(R.id.durationUnitDropdown);
         weightInput = findViewById(R.id.weightInput);
         repsInput = findViewById(R.id.repsInput);
         distanceInput = findViewById(R.id.distanceInput);
         notesInput = findViewById(R.id.notesInput);
         saveButton = findViewById(R.id.saveButton);
+
+        // Set up duration unit dropdown
+        setupDurationUnitDropdown();
 
         // Get exercise details from intent
         String name = getIntent().getStringExtra(EXTRA_EXERCISE_NAME);
@@ -84,6 +98,16 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
         // Set up save button
         saveButton.setOnClickListener(v -> saveExercise(type));
+    }
+
+    private void setupDurationUnitDropdown() {
+        String[] units = new String[]{"minutes", "seconds"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                units
+        );
+        durationUnitDropdown.setAdapter(adapter);
     }
 
     private void showDatePicker() {
@@ -160,6 +184,12 @@ public class RecordExerciseActivity extends AppCompatActivity {
         // Get common field values
         long startTime = selectedDateTime.getTimeInMillis();
         int duration = Integer.parseInt(durationInput.getText().toString());
+        
+        // Convert duration to seconds if needed
+        if (durationUnitDropdown.getText().toString().equals("minutes")) {
+            duration *= 60;
+        }
+        
         String notes = notesInput.getText().toString();
 
         try {
