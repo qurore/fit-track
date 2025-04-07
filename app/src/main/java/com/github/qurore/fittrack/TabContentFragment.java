@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,12 +15,21 @@ import androidx.fragment.app.Fragment;
 
 import com.github.qurore.fittrack.adapters.ExerciseListAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TabContentFragment extends Fragment {
+    private static final String TAG = "TabContentFragment";
     private static final String ARG_TITLE = "title";
     
     private ExpandableListView exerciseListView;
@@ -55,78 +65,71 @@ public class TabContentFragment extends Fragment {
         
         exerciseListView = view.findViewById(R.id.exerciseListView);
         
-        if (title.equals("Strength")) {
-            initializeStrengthData();
-        } else {
-            // Initialize other tab types here
-            initializeGenericData(title);
-        }
-        
+        initializeDataFromJson(title);
         setupListView();
     }
     
-    private void initializeStrengthData() {
+    private void initializeDataFromJson(String tabTitle) {
         categories = new ArrayList<>();
         exercises = new HashMap<>();
 
-        // Add strength training categories
-        categories.add("Chest");
-        categories.add("Back");
-        categories.add("Legs");
-        categories.add("Shoulders");
-        categories.add("Arms");
-        categories.add("Core");
+        try {
+            // Read JSON file from raw resources
+            InputStream inputStream = requireContext().getResources().openRawResource(R.raw.exercises);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            
+            JSONObject jsonObject = new JSONObject(stringBuilder.toString());
+            JSONArray categoriesArray = jsonObject.getJSONArray("categories");
 
-        // Add exercises for each category
-        List<String> chestExercises = new ArrayList<>();
-        chestExercises.add("Bench Press");
-        chestExercises.add("Incline Press");
-        chestExercises.add("Decline Press");
-        chestExercises.add("Chest Fly");
-        chestExercises.add("Push-Up");
-        chestExercises.add("Cable Crossover");
-        exercises.put("Chest", chestExercises);
+            // Find the matching category type for the current tab
+            for (int i = 0; i < categoriesArray.length(); i++) {
+                JSONObject category = categoriesArray.getJSONObject(i);
+                String type = category.getString("type");
+                
+                // Only process the category that matches the current tab
+                if (type.equals(tabTitle)) {
+                    JSONArray subcategories = category.getJSONArray("subcategories");
 
-        List<String> backExercises = new ArrayList<>();
-        backExercises.add("Pull-Up");
-        backExercises.add("Lat Pulldown");
-        backExercises.add("Barbell Row");
-        backExercises.add("Deadlift");
-        backExercises.add("Face Pull");
-        exercises.put("Back", backExercises);
+                    // Process subcategories
+                    for (int j = 0; j < subcategories.length(); j++) {
+                        JSONObject subcategory = subcategories.getJSONObject(j);
+                        String subcategoryName = subcategory.getString("name");
+                        JSONArray exercisesArray = subcategory.getJSONArray("exercises");
 
-        List<String> legExercises = new ArrayList<>();
-        legExercises.add("Squat");
-        legExercises.add("Leg Press");
-        legExercises.add("Lunges");
-        legExercises.add("Leg Extension");
-        legExercises.add("Leg Curl");
-        legExercises.add("Calf Raise");
-        exercises.put("Legs", legExercises);
+                        // Add subcategory to categories list
+                        categories.add(subcategoryName);
 
-        List<String> shoulderExercises = new ArrayList<>();
-        shoulderExercises.add("Overhead Press");
-        shoulderExercises.add("Lateral Raise");
-        shoulderExercises.add("Front Raise");
-        shoulderExercises.add("Reverse Fly");
-        shoulderExercises.add("Shrugs");
-        exercises.put("Shoulders", shoulderExercises);
+                        // Create list for exercises in this subcategory
+                        List<String> exerciseList = new ArrayList<>();
+                        for (int k = 0; k < exercisesArray.length(); k++) {
+                            JSONObject exercise = exercisesArray.getJSONObject(k);
+                            exerciseList.add(exercise.getString("name"));
+                        }
+                        exercises.put(subcategoryName, exerciseList);
+                    }
+                    break; // Exit loop once we've found and processed the matching category
+                }
+            }
 
-        List<String> armExercises = new ArrayList<>();
-        armExercises.add("Bicep Curl");
-        armExercises.add("Tricep Extension");
-        armExercises.add("Hammer Curl");
-        armExercises.add("Skull Crusher");
-        armExercises.add("Preacher Curl");
-        exercises.put("Arms", armExercises);
+            // If no exercises were loaded (category not found), use generic data
+            if (exercises.isEmpty()) {
+                Log.w(TAG, "No exercises found for category: " + tabTitle + ". Using generic data.");
+                initializeGenericData(tabTitle);
+            }
 
-        List<String> coreExercises = new ArrayList<>();
-        coreExercises.add("Plank");
-        coreExercises.add("Crunch");
-        coreExercises.add("Russian Twist");
-        coreExercises.add("Leg Raise");
-        coreExercises.add("Side Plank");
-        exercises.put("Core", coreExercises);
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading exercises.json file", e);
+            initializeGenericData(tabTitle);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing exercises.json file", e);
+            initializeGenericData(tabTitle);
+        }
     }
     
     private void initializeGenericData(String title) {
