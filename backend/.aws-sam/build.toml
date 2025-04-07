@@ -27,4 +27,13 @@ manifest_hash = ""
 packagetype = "Zip"
 functions = ["UserFunction"]
 
+[function_build_definitions.480cf987-9ba9-40f6-a7b5-835b17c3ce12]
+codeuri = "/Users/ryshiro/Library/CloudStorage/Dropbox/FitTrack/backend/exercise-function"
+runtime = "python3.9"
+architecture = "x86_64"
+handler = "app.lambda_handler"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ExerciseFunction"]
+
 [layer_build_definitions]

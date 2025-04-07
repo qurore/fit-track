@@ -67,6 +67,38 @@ Resources:
             Path: /user
             Method: post
 
+  ExerciseFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: exercise-function/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          MONGODB_URI: !Sub '{{resolve:secretsmanager:${MongoDBURISecret}}}'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${MongoDBURISecret}'
+      Events:
+        GetExercises:
+          Type: Api
+          Properties:
+            Path: /exercises
+            Method: get
+        CreateExercise:
+          Type: Api
+          Properties:
+            Path: /exercises
+            Method: post
+        UpdateExercise:
+          Type: Api
+          Properties:
+            Path: /exercises/{id}
+            Method: put
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -94,6 +126,9 @@ Outputs:
   UserApi:
     Description: "API Gateway endpoint URL for Prod stage for User function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/user"
+  ExerciseApi:
+    Description: "API Gateway endpoint URL for Prod stage for Exercise function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/exercises"
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
