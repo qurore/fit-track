@@ -59,6 +59,13 @@ exclude: *.ap_
 exclude: .DS_Store
 exclude: Thumbs.db
 
+# Backend specification
+framework: AWS SAM
+runtime: python3.9
+authorizer: FirebaseAuthorizer
+backend DB: MongoDB Atlas (Always)
+DB name: fittrack
+
 # SAM related files
 include: backend/*
 NOTE: managed secrets on Secret Manager
