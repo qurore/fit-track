@@ -1,5 +1,6 @@
 package com.github.qurore.fittrack;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -158,9 +159,12 @@ public class TabContentFragment extends Fragment {
         exerciseListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
             String category = categories.get(groupPosition);
             String exercise = exercises.get(category).get(childPosition);
-            Toast.makeText(getContext(), 
-                    category + " - " + exercise + " selected", 
-                    Toast.LENGTH_SHORT).show();
+            
+            // Launch RecordExerciseActivity
+            Intent intent = new Intent(getContext(), RecordExerciseActivity.class);
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_NAME, exercise);
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_TYPE, getArguments().getString(ARG_TITLE));
+            startActivity(intent);
             return true;
         });
 
