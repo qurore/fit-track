@@ -30,6 +30,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
 
@@ -38,6 +39,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.Date;
 
 // Implement the listener interface
 public class DashboardActivity extends AppCompatActivity implements SettingsFragment.OnNameUpdatedListener {
@@ -210,16 +214,101 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         viewAllWorkouts.setOnClickListener(v -> {
             bottomNavigationView.setSelectedItemId(R.id.navigation_history);
         });
+
+        // Initialize ExerciseService
+        ExerciseService exerciseService = new ExerciseService(this);
         
-        // Sample data
-        List<RecentWorkout> workouts = Arrays.asList(
-            new RecentWorkout("Upper Body", "Today • 45 min"),
-            new RecentWorkout("Cardio", "Yesterday • 30 min"),
-            new RecentWorkout("Leg Day", "2 days ago • 60 min")
-        );
+        // Fetch recent workouts
+        exerciseService.getAllExercises(new ExerciseService.ExerciseCallback() {
+            @Override
+            public void onSuccess(List<JSONObject> exercises) {
+                // Sort exercises by start time in descending order (most recent first)
+                exercises.sort((a, b) -> {
+                    try {
+                        long timeA = a.getLong("start_time");
+                        long timeB = b.getLong("start_time");
+                        return Long.compare(timeB, timeA); // Descending order
+                    } catch (Exception e) {
+                        return 0;
+                    }
+                });
+
+                // Take only the top 3 most recent workouts
+                List<RecentWorkout> recentWorkouts = new ArrayList<>();
+                for (int i = 0; i < Math.min(3, exercises.size()); i++) {
+                    try {
+                        JSONObject exercise = exercises.get(i);
+                        String name = capitalizeWords(exercise.getString("exercise_type")) + " - " +
+                                    capitalizeWords(exercise.getString("exercise_subtype"));
+                        
+                        // Format the time string
+                        long startTime = exercise.getLong("start_time");
+                        int duration = exercise.getInt("duration"); // Now in minutes
+                        String timeStr = formatRelativeTime(startTime) + " • " + duration + " min";
+
+                        recentWorkouts.add(new RecentWorkout(name, timeStr));
+                    } catch (Exception e) {
+                        Log.e("DashboardActivity", "Error processing exercise", e);
+                    }
+                }
+
+                // Update the RecyclerView on the main thread
+                runOnUiThread(() -> {
+                    RecentWorkoutsAdapter adapter = new RecentWorkoutsAdapter(recentWorkouts);
+                    recentWorkoutsList.setAdapter(adapter);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(DashboardActivity.this, 
+                        "Error loading recent workouts: " + error, 
+                        Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private String capitalizeWords(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
         
-        RecentWorkoutsAdapter adapter = new RecentWorkoutsAdapter(workouts);
-        recentWorkoutsList.setAdapter(adapter);
+        String[] words = text.toLowerCase().split("\\s+");
+        StringBuilder result = new StringBuilder();
+        
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                if (result.length() > 0) {
+                    result.append(" ");
+                }
+                result.append(Character.toUpperCase(word.charAt(0)))
+                      .append(word.substring(1));
+            }
+        }
+        
+        return result.toString();
+    }
+
+    private String formatRelativeTime(long timestamp) {
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+        
+        // Convert to days
+        long days = diff / (24 * 60 * 60 * 1000);
+        
+        if (days == 0) {
+            return "Today";
+        } else if (days == 1) {
+            return "Yesterday";
+        } else if (days < 7) {
+            return days + " days ago";
+        } else {
+            // For older dates, use a simple date format
+            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
+            return dateFormat.format(new Date(timestamp));
+        }
     }
     
     private void setupTabs() {
