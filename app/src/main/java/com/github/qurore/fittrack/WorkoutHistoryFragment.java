@@ -160,12 +160,6 @@ public class WorkoutHistoryFragment extends Fragment {
                 // Format duration
                 String formattedDuration = duration + " min";
                 
-                // Build additional info for cardio exercises
-                if (type.equalsIgnoreCase("Cardio") && exercise.has("distance")) {
-                    float distance = (float) exercise.getDouble("distance");
-                    formattedDuration += " • " + distance + " m";
-                }
-                
                 WorkoutHistoryItem item = new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration);
                 
                 // Add to monthly group

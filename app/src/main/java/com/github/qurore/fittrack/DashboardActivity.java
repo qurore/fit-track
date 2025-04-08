@@ -344,15 +344,16 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 for (int i = 0; i < Math.min(3, exercises.size()); i++) {
                     try {
                         JSONObject exercise = exercises.get(i);
-                        String name = capitalizeWords(exercise.getString("exercise_type")) + " - " +
-                                    capitalizeWords(exercise.getString("exercise_subtype"));
+                        String typeSubtype = capitalizeWords(exercise.getString("exercise_type")) + " - " +
+                                           capitalizeWords(exercise.getString("exercise_subtype"));
+                        String name = capitalizeWords(exercise.getString("exercise_name"));
                         
                         // Format the time string
                         long startTime = exercise.getLong("start_time");
                         int duration = exercise.getInt("duration"); // Now in minutes
                         String timeStr = formatRelativeTime(startTime) + " • " + duration + " min";
 
-                        recentWorkouts.add(new RecentWorkout(name, timeStr));
+                        recentWorkouts.add(new RecentWorkout(typeSubtype, name, timeStr));
                     } catch (Exception e) {
                         Log.e("DashboardActivity", "Error processing exercise", e);
                     }
@@ -522,10 +523,12 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     // Data class for recent workouts
     private static class RecentWorkout {
+        String typeSubtype;
         String name;
         String time;
         
-        RecentWorkout(String name, String time) {
+        RecentWorkout(String typeSubtype, String name, String time) {
+            this.typeSubtype = typeSubtype;
             this.name = name;
             this.time = time;
         }
@@ -548,6 +551,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             RecentWorkout workout = workouts.get(position);
+            holder.exerciseTypeSubtype.setText(workout.typeSubtype);
             holder.workoutName.setText(workout.name);
             holder.workoutTime.setText(workout.time);
             
@@ -565,12 +569,14 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         }
         
         class ViewHolder extends RecyclerView.ViewHolder {
+            TextView exerciseTypeSubtype;
             TextView workoutName;
             TextView workoutTime;
             ImageButton detailsButton;
             
             ViewHolder(View itemView) {
                 super(itemView);
+                exerciseTypeSubtype = itemView.findViewById(R.id.exerciseTypeSubtype);
                 workoutName = itemView.findViewById(R.id.workoutName);
                 workoutTime = itemView.findViewById(R.id.workoutTime);
                 detailsButton = itemView.findViewById(R.id.detailsButton);
