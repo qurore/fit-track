@@ -42,6 +42,8 @@ import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Date;
+import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // Implement the listener interface
 public class DashboardActivity extends AppCompatActivity implements SettingsFragment.OnNameUpdatedListener {
@@ -57,7 +59,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     private View homeContentLayout;
     private BarChart activityChart;
     private TextView workoutDaysValue;
-    private TextView caloriesValue;
+    private TextView totalDurationValue;
     private RecyclerView recentWorkoutsList;
     
     // Workout content
@@ -101,7 +103,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         homeContentLayout = findViewById(R.id.homeContentLayout);
         activityChart = homeContentLayout.findViewById(R.id.activityChart);
         workoutDaysValue = homeContentLayout.findViewById(R.id.workoutDaysValue);
-        caloriesValue = homeContentLayout.findViewById(R.id.caloriesValue);
+        totalDurationValue = homeContentLayout.findViewById(R.id.totalDurationValue);
         recentWorkoutsList = homeContentLayout.findViewById(R.id.recentWorkoutsList);
         
         // Initialize Workout content views
@@ -136,9 +138,9 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
             Toast.makeText(this, "Error loading user data", Toast.LENGTH_SHORT).show();
         }
         
-        // Set up workout days and calories values
+        // Set up workout days and total duration values
         workoutDaysValue.setText("24");
-        caloriesValue.setText("8,540");
+        totalDurationValue.setText("8,540");
         
         // Set up activity chart
         setupActivityChart();
@@ -168,41 +170,111 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     }
     
     private void setupActivityChart() {
-        // Sample data
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        entries.add(new BarEntry(0, 2));
-        entries.add(new BarEntry(1, 4));
-        entries.add(new BarEntry(2, 3));
-        entries.add(new BarEntry(3, 5));
-        entries.add(new BarEntry(4, 2));
-        entries.add(new BarEntry(5, 4));
-        entries.add(new BarEntry(6, 3));
+        ExerciseService exerciseService = new ExerciseService(this);
+        
+        exerciseService.getAllExercises(new ExerciseService.ExerciseCallback() {
+            @Override
+            public void onSuccess(List<JSONObject> exercises) {
+                // Get current week's data
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+                calendar.set(Calendar.HOUR_OF_DAY, 0);
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+                calendar.set(Calendar.MILLISECOND, 0);
+                long weekStart = calendar.getTimeInMillis();
 
-        BarDataSet dataSet = new BarDataSet(entries, "Workouts");
-        dataSet.setColor(getResources().getColor(R.color.colorPrimary));
+                // Count workouts per day and calculate total duration
+                int[] dailyWorkouts = new int[7];
+                int totalWorkouts = exercises.size();
+                AtomicInteger totalDuration = new AtomicInteger(0);
 
-        BarData barData = new BarData(dataSet);
-        barData.setBarWidth(0.5f);
+                // Process exercises
+                for (JSONObject exercise : exercises) {
+                    try {
+                        // Add duration to total
+                        totalDuration.addAndGet(exercise.getInt("duration"));
 
-        activityChart.setData(barData);
-        activityChart.getDescription().setEnabled(false);
-        activityChart.getLegend().setEnabled(false);
-        activityChart.setDrawGridBackground(false);
-        activityChart.setDrawBorders(false);
+                        // Process weekly chart data
+                        long startTime = exercise.getLong("start_time");
+                        if (startTime >= weekStart) {
+                            Calendar exerciseDate = Calendar.getInstance();
+                            exerciseDate.setTimeInMillis(startTime);
+                            int dayOfWeek = exerciseDate.get(Calendar.DAY_OF_WEEK);
+                            // Adjust index based on first day of week
+                            int index = (dayOfWeek - calendar.getFirstDayOfWeek() + 7) % 7;
+                            dailyWorkouts[index]++;
+                        }
+                    } catch (Exception e) {
+                        Log.e("DashboardActivity", "Error processing exercise data", e);
+                    }
+                }
 
-        // Customize X axis
-        String[] days = new String[]{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-        XAxis xAxis = activityChart.getXAxis();
-        xAxis.setValueFormatter(new IndexAxisValueFormatter(days));
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setGranularity(1f);
+                // Update statistics on UI thread
+                runOnUiThread(() -> {
+                    workoutDaysValue.setText(String.valueOf(totalWorkouts));
+                    totalDurationValue.setText(String.valueOf(totalDuration.get()));
+                });
 
-        // Customize Y axis
-        activityChart.getAxisLeft().setDrawGridLines(false);
-        activityChart.getAxisRight().setEnabled(false);
+                // Create chart entries
+                ArrayList<BarEntry> entries = new ArrayList<>();
+                for (int i = 0; i < 7; i++) {
+                    entries.add(new BarEntry(i, dailyWorkouts[i]));
+                }
 
-        activityChart.invalidate();
+                // Update chart on UI thread
+                runOnUiThread(() -> {
+                    BarDataSet dataSet = new BarDataSet(entries, "Workouts");
+                    dataSet.setColor(getResources().getColor(R.color.colorPrimary));
+
+                    BarData barData = new BarData(dataSet);
+                    barData.setBarWidth(0.5f);
+
+                    activityChart.setData(barData);
+                    activityChart.getDescription().setEnabled(false);
+                    activityChart.getLegend().setEnabled(false);
+                    activityChart.setDrawGridBackground(false);
+                    activityChart.setDrawBorders(false);
+
+                    // Customize X axis with day names
+                    String[] days = getDayNames();
+                    XAxis xAxis = activityChart.getXAxis();
+                    xAxis.setValueFormatter(new IndexAxisValueFormatter(days));
+                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                    xAxis.setDrawGridLines(false);
+                    xAxis.setGranularity(1f);
+
+                    // Customize Y axis
+                    activityChart.getAxisLeft().setDrawGridLines(false);
+                    activityChart.getAxisRight().setEnabled(false);
+
+                    activityChart.invalidate();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Toast.makeText(DashboardActivity.this, 
+                        "Error loading activity data: " + error, 
+                        Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+    }
+
+    private String[] getDayNames() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_WEEK, calendar.getFirstDayOfWeek());
+        String[] days = new String[7];
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE", Locale.getDefault());
+        
+        for (int i = 0; i < 7; i++) {
+            days[i] = sdf.format(calendar.getTime());
+            calendar.add(Calendar.DAY_OF_WEEK, 1);
+        }
+        
+        return days;
     }
     
     private void setupRecentWorkouts() {
