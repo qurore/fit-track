@@ -40,6 +40,9 @@ public class RecordExerciseActivity extends AppCompatActivity {
     public static final String EXTRA_EXERCISE_NAME = "exercise_name";
     public static final String EXTRA_EXERCISE_TYPE = "exercise_type";
     public static final String EXTRA_EXERCISE_SUBTYPE = "exercise_subtype";
+    public static final String EXTRA_EDIT_MODE = "edit_mode";
+    public static final String EXTRA_EXERCISE_ID = "exercise_id";
+    public static final String EXTRA_EXERCISE_DATA = "exercise_data";
 
     private TextView exerciseName;
     private Button datePickerButton;
@@ -60,6 +63,10 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
     private RequestQueue requestQueue;
     private FirebaseAuth mAuth;
+    
+    private boolean isEditMode = false;
+    private String exerciseId = null;
+    private JSONObject originalExerciseData = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +106,32 @@ public class RecordExerciseActivity extends AppCompatActivity {
         String name = getIntent().getStringExtra(EXTRA_EXERCISE_NAME);
         String type = getIntent().getStringExtra(EXTRA_EXERCISE_TYPE);
         String subtype = getIntent().getStringExtra(EXTRA_EXERCISE_SUBTYPE);
+        
+        // Check if in edit mode
+        isEditMode = getIntent().getBooleanExtra(EXTRA_EDIT_MODE, false);
+        if (isEditMode) {
+            exerciseId = getIntent().getStringExtra(EXTRA_EXERCISE_ID);
+            String exerciseDataString = getIntent().getStringExtra(EXTRA_EXERCISE_DATA);
+            
+            // Set window title to reflect edit mode
+            setTitle("Edit Exercise");
+            saveButton.setText("Update Exercise");
+            
+            // Load exercise data
+            if (exerciseDataString != null) {
+                try {
+                    originalExerciseData = new JSONObject(exerciseDataString);
+                    populateFieldsFromExerciseData(originalExerciseData, type);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing exercise data", e);
+                    Toast.makeText(this, "Error loading exercise data", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+            }
+        } else {
+            setTitle("Record Exercise");
+        }
 
         // Set exercise name and update title with type and subtype
         exerciseName.setText(name);
@@ -117,7 +150,58 @@ public class RecordExerciseActivity extends AppCompatActivity {
         updateDateTimeButtons();
 
         // Set up save button
-        saveButton.setOnClickListener(v -> saveExercise(type, subtype));
+        saveButton.setOnClickListener(v -> {
+            if (isEditMode) {
+                updateExercise(type, subtype);
+            } else {
+                saveExercise(type, subtype);
+            }
+        });
+    }
+    
+    private void populateFieldsFromExerciseData(JSONObject exerciseData, String type) {
+        try {
+            // Set start time
+            long startTime = exerciseData.getLong("start_time");
+            selectedDateTime.setTimeInMillis(startTime);
+            updateDateTimeButtons();
+            
+            // Set duration
+            if (exerciseData.has("duration")) {
+                durationInput.setText(String.valueOf(exerciseData.getInt("duration")));
+            }
+            
+            // Set notes if available
+            if (exerciseData.has("notes") && !exerciseData.isNull("notes")) {
+                notesInput.setText(exerciseData.getString("notes"));
+            }
+            
+            // Set type-specific fields
+            switch (type) {
+                case "Strength":
+                    if (exerciseData.has("weight")) {
+                        weightInput.setText(String.valueOf(exerciseData.getDouble("weight")));
+                    }
+                    if (exerciseData.has("reps")) {
+                        repsInput.setText(String.valueOf(exerciseData.getInt("reps")));
+                    }
+                    break;
+                    
+                case "Cardio":
+                    if (exerciseData.has("distance") && !exerciseData.isNull("distance")) {
+                        distanceInput.setText(String.valueOf(exerciseData.getDouble("distance")));
+                    }
+                    break;
+                    
+                case "Flexibility":
+                case "Functional":
+                    // No additional fields needed
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error populating fields from exercise data", e);
+            Toast.makeText(this, "Error loading exercise data", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showDatePicker() {
@@ -190,6 +274,84 @@ public class RecordExerciseActivity extends AppCompatActivity {
             return 0;
         }
         return Float.parseFloat(distanceInput.getText().toString());
+    }
+    
+    private void updateExercise(String type, String subtype) {
+        // Validate required fields
+        if (!validateCommonFields()) {
+            return;
+        }
+
+        // Get common field values
+        final long startTime = selectedDateTime.getTimeInMillis();
+        final int duration = Integer.parseInt(durationInput.getText().toString());
+        final String notes = notesInput.getText().toString();
+        final String name = exerciseName.getText().toString();
+
+        try {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) {
+                Toast.makeText(this, "Please sign in to update exercises", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Prepare type-specific data
+            final JSONObject exerciseData = new JSONObject();
+            try {
+                exerciseData.put("exercise_type", type.toLowerCase());
+                exerciseData.put("exercise_name", name);
+                exerciseData.put("start_time", startTime);
+                exerciseData.put("duration", duration);
+                exerciseData.put("notes", notes);
+                exerciseData.put("exercise_subtype", subtype.toLowerCase());
+
+                // Add type-specific fields
+                switch (type) {
+                    case "Strength":
+                        if (!validateStrengthFields()) {
+                            return;
+                        }
+                        float weight = Float.parseFloat(weightInput.getText().toString());
+                        int reps = Integer.parseInt(repsInput.getText().toString());
+                        exerciseData.put("weight", weight);
+                        exerciseData.put("reps", reps);
+                        break;
+
+                    case "Cardio":
+                        if (!distanceInput.getText().toString().isEmpty()) {
+                            float distance = getDistanceInMeters();
+                            exerciseData.put("distance", distance);
+                        }
+                        break;
+
+                    case "Flexibility":
+                    case "Functional":
+                        // No additional fields needed
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show();
+                return;
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating exercise data", e);
+                Toast.makeText(this, "Error preparing exercise data", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Get the token and send the data
+            currentUser.getIdToken(true)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String idToken = task.getResult().getToken();
+                        sendUpdatedExerciseData(exerciseData, idToken);
+                    } else {
+                        Toast.makeText(this, "Authentication error", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Error updating exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void saveExercise(String type, String subtype) {
@@ -288,6 +450,48 @@ public class RecordExerciseActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
+    
+    private void sendUpdatedExerciseData(JSONObject exerciseData, String idToken) {
+        try {
+            // Extract the ID from the MongoDB ObjectId format if necessary
+            String id = exerciseId;
+            if (exerciseId.contains("$oid")) {
+                // Parse the MongoDB ObjectId format
+                JSONObject jsonId = new JSONObject(exerciseId);
+                id = jsonId.getString("$oid");
+            }
+            
+            String url = API_URL + "/" + id;
+            
+            JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.PUT,
+                url,
+                exerciseData,
+                response -> {
+                    Log.d(TAG, "Exercise updated successfully");
+                    Toast.makeText(this, "Exercise updated successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                },
+                error -> {
+                    Log.e(TAG, "Error updating exercise: " + error.toString());
+                    Toast.makeText(this, "Error updating exercise", Toast.LENGTH_SHORT).show();
+                }
+            ) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "Bearer " + idToken);
+                    headers.put("Content-Type", "application/json");
+                    return headers;
+                }
+            };
+            
+            requestQueue.add(request);
+        } catch (Exception e) {
+            Log.e(TAG, "Error preparing update request", e);
+            Toast.makeText(this, "Error updating exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void sendExerciseData(JSONObject exerciseData, String idToken) {

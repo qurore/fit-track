@@ -162,6 +162,7 @@ public class WorkoutHistoryFragment extends Fragment {
                 
                 WorkoutHistoryItem item = new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration);
                 item.startTime = startTime; // Add startTime for sorting
+                item.completeData = exercise; // Store the complete exercise data
                 
                 // Add to monthly group
                 monthlyExercises.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(item);
@@ -233,6 +234,7 @@ public class WorkoutHistoryFragment extends Fragment {
         String subtype;
         String time;
         long startTime; // Add startTime field for sorting
+        JSONObject completeData; // Store complete exercise data
         
         WorkoutHistoryItem(String id, String name, String type, String subtype, String time) {
             this.id = id;
@@ -330,6 +332,31 @@ public class WorkoutHistoryFragment extends Fragment {
                         .setNegativeButton("Cancel", null)
                         .show();
                 });
+                
+                exerciseHolder.editButton.setOnClickListener(v -> {
+                    // Open RecordExerciseActivity in edit mode with the exercise data
+                    try {
+                        // Create intent to launch RecordExerciseActivity
+                        Intent intent = new Intent(requireContext(), RecordExerciseActivity.class);
+                        
+                        // Set edit mode and exercise ID
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EDIT_MODE, true);
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_ID, workout.id);
+                        
+                        // Put exercise data
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_NAME, workout.name);
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_TYPE, workout.type);
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_SUBTYPE, workout.subtype);
+                        
+                        // Include full exercise details as a JSON string 
+                        intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_DATA, workout.completeData.toString());
+                        
+                        // Start activity
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "Error opening exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         }
         
@@ -352,6 +379,7 @@ public class WorkoutHistoryFragment extends Fragment {
             TextView workoutName;
             TextView workoutTime;
             ImageButton deleteButton;
+            ImageButton editButton;
             
             ExerciseViewHolder(View itemView) {
                 super(itemView);
@@ -359,6 +387,7 @@ public class WorkoutHistoryFragment extends Fragment {
                 workoutName = itemView.findViewById(R.id.workoutName);
                 workoutTime = itemView.findViewById(R.id.workoutTime);
                 deleteButton = itemView.findViewById(R.id.deleteButton);
+                editButton = itemView.findViewById(R.id.editButton);
             }
         }
     }

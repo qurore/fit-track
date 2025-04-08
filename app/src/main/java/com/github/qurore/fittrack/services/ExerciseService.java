@@ -39,6 +39,11 @@ public class ExerciseService {
         void onError(String error);
     }
     
+    public interface ExerciseDetailsCallback {
+        void onSuccess(JSONObject exerciseDetails);
+        void onError(String error);
+    }
+    
     public ExerciseService(Context context) {
         requestQueue = Volley.newRequestQueue(context);
         mAuth = FirebaseAuth.getInstance();
@@ -138,6 +143,59 @@ public class ExerciseService {
                             }
                         };
 
+                        requestQueue.add(request);
+                    } catch (Exception e) {
+                        callback.onError("Error processing exercise ID: " + e.getMessage());
+                    }
+                } else {
+                    callback.onError("Failed to get authentication token");
+                }
+            });
+    }
+
+    public void getExerciseDetails(String exerciseId, ExerciseDetailsCallback callback) {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            callback.onError("User not authenticated");
+            return;
+        }
+        
+        currentUser.getIdToken(true)
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    String idToken = task.getResult().getToken();
+                    try {
+                        // Extract the ID from the MongoDB ObjectId format if necessary
+                        String id = exerciseId;
+                        if (exerciseId.contains("$oid")) {
+                            // Parse the MongoDB ObjectId format
+                            JSONObject jsonId = new JSONObject(exerciseId);
+                            id = jsonId.getString("$oid");
+                        }
+                        
+                        String url = API_URL + "/" + id;
+                        
+                        JsonObjectRequest request = new JsonObjectRequest(
+                            Request.Method.GET,
+                            url,
+                            null,
+                            response -> callback.onSuccess(response),
+                            error -> {
+                                String errorMessage = "Failed to fetch exercise details";
+                                if (error.networkResponse != null) {
+                                    errorMessage += " (Status: " + error.networkResponse.statusCode + ")";
+                                }
+                                callback.onError(errorMessage);
+                            }
+                        ) {
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                Map<String, String> headers = new HashMap<>();
+                                headers.put("Authorization", "Bearer " + idToken);
+                                return headers;
+                            }
+                        };
+                        
                         requestQueue.add(request);
                     } catch (Exception e) {
                         callback.onError("Error processing exercise ID: " + e.getMessage());
