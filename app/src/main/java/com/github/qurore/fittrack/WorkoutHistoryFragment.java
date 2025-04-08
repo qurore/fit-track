@@ -131,7 +131,8 @@ public class WorkoutHistoryFragment extends Fragment {
         monthFormat.setTimeZone(TimeZone.getDefault());
         
         // Sort exercises by start time in descending order and group by month
-        TreeMap<String, List<WorkoutHistoryItem>> monthlyExercises = new TreeMap<>((a, b) -> b.compareTo(a));
+        TreeMap<Long, String> monthKeySorting = new TreeMap<>((a, b) -> b.compareTo(a));
+        TreeMap<String, List<WorkoutHistoryItem>> monthlyExercises = new TreeMap<>();
         
         for (JSONObject exercise : exercises) {
             try {
@@ -145,6 +146,16 @@ public class WorkoutHistoryFragment extends Fragment {
                 // Format the date
                 String formattedDate = dateFormat.format(new Date(startTime));
                 String monthKey = monthFormat.format(new Date(startTime));
+                
+                // Store the month's timestamp for sorting
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(new Date(startTime));
+                cal.set(Calendar.DAY_OF_MONTH, 1);
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                monthKeySorting.put(cal.getTimeInMillis(), monthKey);
                 
                 // Format duration
                 String formattedDuration = duration + " min";
@@ -165,10 +176,11 @@ public class WorkoutHistoryFragment extends Fragment {
             }
         }
         
-        // Convert grouped data to flat list with headers
-        for (String month : monthlyExercises.keySet()) {
-            items.add(new MonthHeaderItem(month));
-            items.addAll(monthlyExercises.get(month));
+        // Convert grouped data to flat list with headers in descending order
+        for (Long monthTimestamp : monthKeySorting.keySet()) {
+            String monthKey = monthKeySorting.get(monthTimestamp);
+            items.add(new MonthHeaderItem(monthKey));
+            items.addAll(monthlyExercises.get(monthKey));
         }
         
         return items;
