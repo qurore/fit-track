@@ -141,8 +141,8 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         }
         
         // Set up workout days and total duration values
-        workoutDaysValue.setText("24");
-        totalDurationValue.setText("8,540");
+        workoutDaysValue.setText("-");
+        totalDurationValue.setText("-");
         
         // Set up activity chart
         setupActivityChart();
@@ -189,6 +189,11 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 // Calculate week end date
                 Calendar endCalendar = (Calendar) calendar.clone();
                 endCalendar.add(Calendar.DAY_OF_WEEK, 6);
+                endCalendar.set(Calendar.HOUR_OF_DAY, 23);
+                endCalendar.set(Calendar.MINUTE, 59);
+                endCalendar.set(Calendar.SECOND, 59);
+                endCalendar.set(Calendar.MILLISECOND, 999);
+                long weekEnd = endCalendar.getTimeInMillis();
 
                 // Format date range
                 SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d", Locale.getDefault());
@@ -208,20 +213,24 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
 
                 final String dateRange = startDate + " - " + endDate;
 
-                // Count workouts per day and calculate total duration
+                // Count workouts per day and calculate total duration for current week
                 int[] dailyWorkouts = new int[7];
-                int totalWorkouts = exercises.size();
-                AtomicInteger totalDuration = new AtomicInteger(0);
+                AtomicInteger weeklyWorkouts = new AtomicInteger(0);
+                AtomicInteger weeklyDuration = new AtomicInteger(0);
 
                 // Process exercises
                 for (JSONObject exercise : exercises) {
                     try {
-                        // Add duration to total
-                        totalDuration.addAndGet(exercise.getInt("duration"));
-
-                        // Process weekly chart data
+                        // Process weekly data
                         long startTime = exercise.getLong("start_time");
-                        if (startTime >= weekStart) {
+                        if (startTime >= weekStart && startTime <= weekEnd) {
+                            // Increment weekly workout count
+                            weeklyWorkouts.incrementAndGet();
+                            
+                            // Add duration to weekly total
+                            weeklyDuration.addAndGet(exercise.getInt("duration"));
+
+                            // Update daily workout count
                             Calendar exerciseDate = Calendar.getInstance();
                             exerciseDate.setTimeInMillis(startTime);
                             int dayOfWeek = exerciseDate.get(Calendar.DAY_OF_WEEK);
@@ -236,8 +245,8 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
 
                 // Update statistics on UI thread
                 runOnUiThread(() -> {
-                    workoutDaysValue.setText(String.valueOf(totalWorkouts));
-                    totalDurationValue.setText(String.valueOf(totalDuration.get()));
+                    workoutDaysValue.setText(String.valueOf(weeklyWorkouts.get()));
+                    totalDurationValue.setText(String.valueOf(weeklyDuration.get()));
                     weekRangeText.setText(dateRange);
                 });
 
