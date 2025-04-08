@@ -36,8 +36,7 @@
             android:textSize="14sp"
             app:layout_constraintEnd_toStartOf="@id/detailsButton"
             app:layout_constraintStart_toEndOf="@id/workoutIcon"
-            app:layout_constraintTop_toTopOf="@id/workoutIcon"
-            tools:text="Strength - Upper Body" />
+            app:layout_constraintTop_toTopOf="@id/workoutIcon"/>
 
         <TextView
             android:id="@+id/workoutName"
@@ -50,8 +49,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/detailsButton"
             app:layout_constraintStart_toEndOf="@id/workoutIcon"
-            app:layout_constraintTop_toBottomOf="@id/exerciseTypeSubtype"
-            tools:text="Bench Press" />
+            app:layout_constraintTop_toBottomOf="@id/exerciseTypeSubtype"/>
 
         <TextView
             android:id="@+id/workoutTime"
@@ -62,8 +60,7 @@
             android:textColor="@android:color/darker_gray"
             app:layout_constraintEnd_toStartOf="@id/detailsButton"
             app:layout_constraintStart_toEndOf="@id/workoutIcon"
-            app:layout_constraintTop_toBottomOf="@id/workoutName"
-            tools:text="Today • 45 min" />
+            app:layout_constraintTop_toBottomOf="@id/workoutName"/>
 
         <ImageButton
             android:id="@+id/detailsButton"
