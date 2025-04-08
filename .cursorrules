@@ -79,7 +79,7 @@ data class StrengthExercise(
     val exerciseSubtype: String,            // Exercise category (running, cycling, etc.)
     val exerciseName: String,               // Exercise name (bench press, squat, etc.)
     val startTime: Long,                    // Start time (timestamp)
-    val duration: Int? = null,              // Total duration (seconds)
+    val duration: Int? = null,              // Total duration (minutes)
     val weight: Float,                      // Weight (kg)
     val reps: Int,                          // Number of repetitions
     val notes: String? = null               // Notes/Additional information
@@ -91,8 +91,8 @@ data class CardioExercise(
     val exerciseSubtype: String,            // Exercise category (running, cycling, etc.)
     val exerciseName: String,               // Exercise name (running, cycling, etc.)
     val startTime: Long,                    // Start time (timestamp)
-    val duration: Int,                      // Duration (seconds)
-    val distance: Float? = null,            // Distance (km/m))
+    val duration: Int,                      // Duration (minutes)
+    val distance: Float? = null,            // Distance (meters)
     val notes: String? = null               // Notes/Additional information
 )
 
@@ -102,7 +102,7 @@ data class FlexibilityExercise(
     val exerciseSubtype: String,            // Exercise category (hamstring stretch, etc.)
     val exerciseName: String,               // Exercise name (hamstring stretch, etc.)
     val startTime: Long,                    // Start time (timestamp)
-    val duration: Int,                      // Stretch duration (seconds)
+    val duration: Int,                      // Stretch duration (minutes)
     val notes: String? = null               // Notes/Additional information
 )
 
@@ -112,7 +112,7 @@ data class FunctionalExercise(
     val exerciseSubtype: String,            // Exercise category (plank, burpee, etc.)
     val exerciseName: String,               // Exercise name (plank, burpee, etc.)
     val startTime: Long,                    // Start time (timestamp)
-    val duration: Int,                      // Duration (seconds)
+    val duration: Int,                      // Duration (minutes)
     val notes: String? = null               // Notes/Additional information
 )
 

@@ -130,13 +130,19 @@ public class WorkoutHistoryFragment extends Fragment {
                 String type = capitalizeWords(exercise.getString("exercise_type"));
                 String subtype = capitalizeWords(exercise.getString("exercise_subtype"));
                 long startTime = exercise.getLong("start_time");
-                int duration = exercise.getInt("duration");
+                int duration = exercise.getInt("duration"); // Now in minutes
                 
                 // Format the date
                 String formattedDate = dateFormat.format(new Date(startTime));
                 
-                // Format duration
-                String formattedDuration = formatDuration(duration);
+                // Format duration (now directly in minutes)
+                String formattedDuration = duration + " min";
+                
+                // Build additional info for cardio exercises
+                if (type.equalsIgnoreCase("Cardio") && exercise.has("distance")) {
+                    float distance = (float) exercise.getDouble("distance"); // Already in meters
+                    formattedDuration += " • " + distance + " m";
+                }
                 
                 items.add(new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration));
             } catch (Exception e) {
@@ -167,15 +173,6 @@ public class WorkoutHistoryFragment extends Fragment {
         }
         
         return result.toString();
-    }
-    
-    private String formatDuration(int seconds) {
-        if (seconds < 60) {
-            return seconds + " sec";
-        } else {
-            int minutes = seconds / 60;
-            return minutes + " min";
-        }
     }
     
     // Data class for workout history items

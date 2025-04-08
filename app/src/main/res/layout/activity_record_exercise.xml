@@ -80,49 +80,23 @@
                 app:layout_constraintStart_toEndOf="@+id/datePickerButton"
                 app:layout_constraintTop_toTopOf="@id/datePickerButton" />
 
-            <!-- Duration Field with Unit Selection -->
+            <!-- Duration Field -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/durationLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginEnd="8dp"
-                android:hint="Duration"
-                app:layout_constraintEnd_toStartOf="@+id/durationUnitLayout"
+                android:hint="Duration (minutes)"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/datePickerButton"
-                app:layout_constraintHorizontal_weight="1">
+                app:layout_constraintTop_toBottomOf="@id/datePickerButton">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/durationInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Duration Unit Selector -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/durationUnitLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                app:layout_constraintBottom_toBottomOf="@id/durationLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/durationLayout"
-                app:layout_constraintTop_toTopOf="@id/durationLayout"
-                app:layout_constraintHorizontal_weight="1">
-
-                <AutoCompleteTextView
-                    android:id="@+id/durationUnitDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:text="minutes" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Weight Field (For Strength only) -->
@@ -172,44 +146,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:layout_marginEnd="8dp"
-                android:hint="Distance"
+                android:hint="Distance (meters)"
                 android:visibility="gone"
-                app:layout_constraintEnd_toStartOf="@+id/distanceUnitLayout"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/repsLayout"
-                app:layout_constraintHorizontal_weight="1">
+                app:layout_constraintTop_toBottomOf="@id/repsLayout">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/distanceInput"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Distance Unit Selector -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/distanceUnitLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@id/distanceLayout"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/distanceLayout"
-                app:layout_constraintTop_toTopOf="@id/distanceLayout"
-                app:layout_constraintHorizontal_weight="1">
-
-                <AutoCompleteTextView
-                    android:id="@+id/distanceUnitDropdown"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:text="km" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Notes Field (Common for all types) -->

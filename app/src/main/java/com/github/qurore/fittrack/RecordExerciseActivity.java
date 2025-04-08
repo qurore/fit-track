@@ -47,10 +47,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
     private TextInputLayout weightLayout;
     private TextInputLayout repsLayout;
     private TextInputLayout distanceLayout;
-    private TextInputLayout distanceUnitLayout;
     private TextInputEditText durationInput;
-    private AutoCompleteTextView durationUnitDropdown;
-    private AutoCompleteTextView distanceUnitDropdown;
     private TextInputEditText weightInput;
     private TextInputEditText repsInput;
     private TextInputEditText distanceInput;
@@ -91,21 +88,12 @@ public class RecordExerciseActivity extends AppCompatActivity {
         weightLayout = findViewById(R.id.weightLayout);
         repsLayout = findViewById(R.id.repsLayout);
         distanceLayout = findViewById(R.id.distanceLayout);
-        distanceUnitLayout = findViewById(R.id.distanceUnitLayout);
         durationInput = findViewById(R.id.durationInput);
-        durationUnitDropdown = findViewById(R.id.durationUnitDropdown);
-        distanceUnitDropdown = findViewById(R.id.distanceUnitDropdown);
         weightInput = findViewById(R.id.weightInput);
         repsInput = findViewById(R.id.repsInput);
         distanceInput = findViewById(R.id.distanceInput);
         notesInput = findViewById(R.id.notesInput);
         saveButton = findViewById(R.id.saveButton);
-
-        // Set up duration unit dropdown
-        setupDurationUnitDropdown();
-        
-        // Set up distance unit dropdown
-        setupDistanceUnitDropdown();
 
         // Get exercise details from intent
         String name = getIntent().getStringExtra(EXTRA_EXERCISE_NAME);
@@ -130,28 +118,6 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
         // Set up save button
         saveButton.setOnClickListener(v -> saveExercise(type, subtype));
-    }
-
-    private void setupDurationUnitDropdown() {
-        String[] units = new String[]{"minutes", "seconds"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                units
-        );
-        durationUnitDropdown.setAdapter(adapter);
-        durationUnitDropdown.setText("minutes", false);
-    }
-
-    private void setupDistanceUnitDropdown() {
-        String[] units = new String[]{"km", "m"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_dropdown_item_1line,
-                units
-        );
-        distanceUnitDropdown.setAdapter(adapter);
-        distanceUnitDropdown.setText("km", false);
     }
 
     private void showDatePicker() {
@@ -202,7 +168,6 @@ public class RecordExerciseActivity extends AppCompatActivity {
         weightLayout.setVisibility(View.GONE);
         repsLayout.setVisibility(View.GONE);
         distanceLayout.setVisibility(View.GONE);
-        distanceUnitLayout.setVisibility(View.GONE);
 
         // Show relevant fields based on type
         switch (type) {
@@ -212,7 +177,6 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 break;
             case "Cardio":
                 distanceLayout.setVisibility(View.VISIBLE);
-                distanceUnitLayout.setVisibility(View.VISIBLE);
                 break;
             case "Flexibility":
             case "Functional":
@@ -225,11 +189,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
         if (distanceInput.getText().toString().isEmpty()) {
             return 0;
         }
-        float distance = Float.parseFloat(distanceInput.getText().toString());
-        if (distanceUnitDropdown.getText().toString().equals("km")) {
-            return distance * 1000; // Convert km to meters
-        }
-        return distance; // Already in meters
+        return Float.parseFloat(distanceInput.getText().toString());
     }
 
     private void saveExercise(String type, String subtype) {
@@ -240,7 +200,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
         // Get common field values
         final long startTime = selectedDateTime.getTimeInMillis();
-        final int duration = getDurationInSeconds();
+        final int duration = Integer.parseInt(durationInput.getText().toString()); // Now storing in minutes
         final String notes = notesInput.getText().toString();
         final String name = exerciseName.getText().toString();
 
@@ -257,7 +217,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 exerciseData.put("exercise_type", type.toLowerCase());
                 exerciseData.put("exercise_name", name);
                 exerciseData.put("start_time", startTime);
-                exerciseData.put("duration", duration);
+                exerciseData.put("duration", duration); // Now in minutes
                 exerciseData.put("notes", notes);
                 exerciseData.put("exercise_subtype", subtype.toLowerCase());
 
@@ -275,8 +235,8 @@ public class RecordExerciseActivity extends AppCompatActivity {
 
                     case "Cardio":
                         if (!distanceInput.getText().toString().isEmpty()) {
-                            float distanceInMeters = getDistanceInMeters();
-                            exerciseData.put("distance", distanceInMeters);
+                            float distance = getDistanceInMeters(); // Now storing in meters directly
+                            exerciseData.put("distance", distance);
                         }
                         break;
 
@@ -308,14 +268,6 @@ public class RecordExerciseActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Error saving exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private int getDurationInSeconds() {
-        int duration = Integer.parseInt(durationInput.getText().toString());
-        if (durationUnitDropdown.getText().toString().equals("minutes")) {
-            duration *= 60;
-        }
-        return duration;
     }
 
     private boolean validateCommonFields() {
