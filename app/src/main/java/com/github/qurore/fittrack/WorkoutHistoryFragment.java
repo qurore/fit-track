@@ -74,7 +74,10 @@ public class WorkoutHistoryFragment extends Fragment {
         addExerciseLink.setOnClickListener(v -> {
             // Navigate to workout selection screen
             if (getActivity() instanceof DashboardActivity) {
-                ((DashboardActivity) getActivity()).showWorkoutContent();
+                DashboardActivity activity = (DashboardActivity) getActivity();
+                activity.showWorkoutContent();
+                // Update bottom navigation to Workout tab
+                activity.findViewById(R.id.bottomNavigation).findViewById(R.id.navigation_workout).performClick();
             }
         });
         

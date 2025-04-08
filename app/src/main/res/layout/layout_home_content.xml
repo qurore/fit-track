@@ -26,8 +26,7 @@
         android:textColor="@android:color/darker_gray"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="@id/activityTitle"
-        app:layout_constraintTop_toBottomOf="@id/activityTitle"
-        tools:text="Apr 6 - Apr 12" />
+        app:layout_constraintTop_toBottomOf="@id/activityTitle"/>
 
     <com.github.mikephil.charting.charts.BarChart
         android:id="@+id/activityChart"
