@@ -60,6 +60,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     private BarChart activityChart;
     private TextView workoutDaysValue;
     private TextView totalDurationValue;
+    private TextView weekRangeText;
     private RecyclerView recentWorkoutsList;
     
     // Workout content
@@ -104,6 +105,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         activityChart = homeContentLayout.findViewById(R.id.activityChart);
         workoutDaysValue = homeContentLayout.findViewById(R.id.workoutDaysValue);
         totalDurationValue = homeContentLayout.findViewById(R.id.totalDurationValue);
+        weekRangeText = homeContentLayout.findViewById(R.id.weekRangeText);
         recentWorkoutsList = homeContentLayout.findViewById(R.id.recentWorkoutsList);
         
         // Initialize Workout content views
@@ -184,6 +186,28 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 calendar.set(Calendar.MILLISECOND, 0);
                 long weekStart = calendar.getTimeInMillis();
 
+                // Calculate week end date
+                Calendar endCalendar = (Calendar) calendar.clone();
+                endCalendar.add(Calendar.DAY_OF_WEEK, 6);
+
+                // Format date range
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d", Locale.getDefault());
+                String startDate = dateFormat.format(calendar.getTime());
+                String endDate = dateFormat.format(endCalendar.getTime());
+                
+                // Add year if the week spans different years
+                if (calendar.get(Calendar.YEAR) != endCalendar.get(Calendar.YEAR)) {
+                    dateFormat = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
+                    startDate = dateFormat.format(calendar.getTime());
+                    endDate = dateFormat.format(endCalendar.getTime());
+                } else if (endCalendar.get(Calendar.YEAR) != Calendar.getInstance().get(Calendar.YEAR)) {
+                    // Add year if the week is not in the current year
+                    startDate += ", " + calendar.get(Calendar.YEAR);
+                    endDate += ", " + endCalendar.get(Calendar.YEAR);
+                }
+
+                final String dateRange = startDate + " - " + endDate;
+
                 // Count workouts per day and calculate total duration
                 int[] dailyWorkouts = new int[7];
                 int totalWorkouts = exercises.size();
@@ -214,6 +238,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 runOnUiThread(() -> {
                     workoutDaysValue.setText(String.valueOf(totalWorkouts));
                     totalDurationValue.setText(String.valueOf(totalDuration.get()));
+                    weekRangeText.setText(dateRange);
                 });
 
                 // Create chart entries
