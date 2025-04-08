@@ -161,6 +161,7 @@ public class WorkoutHistoryFragment extends Fragment {
                 String formattedDuration = duration + " min";
                 
                 WorkoutHistoryItem item = new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration);
+                item.startTime = startTime; // Add startTime for sorting
                 
                 // Add to monthly group
                 monthlyExercises.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(item);
@@ -174,7 +175,11 @@ public class WorkoutHistoryFragment extends Fragment {
         for (Long monthTimestamp : monthKeySorting.keySet()) {
             String monthKey = monthKeySorting.get(monthTimestamp);
             items.add(new MonthHeaderItem(monthKey));
-            items.addAll(monthlyExercises.get(monthKey));
+            
+            // Sort exercises within the month by start time in descending order
+            List<WorkoutHistoryItem> monthExercises = monthlyExercises.get(monthKey);
+            monthExercises.sort((a, b) -> Long.compare(b.startTime, a.startTime));
+            items.addAll(monthExercises);
         }
         
         return items;
@@ -227,6 +232,7 @@ public class WorkoutHistoryFragment extends Fragment {
         String type;
         String subtype;
         String time;
+        long startTime; // Add startTime field for sorting
         
         WorkoutHistoryItem(String id, String name, String type, String subtype, String time) {
             this.id = id;

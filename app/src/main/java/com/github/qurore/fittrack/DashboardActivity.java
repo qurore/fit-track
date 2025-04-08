@@ -341,6 +341,8 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
 
                 // Take only the top 3 most recent workouts
                 List<RecentWorkout> recentWorkouts = new ArrayList<>();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                
                 for (int i = 0; i < Math.min(3, exercises.size()); i++) {
                     try {
                         JSONObject exercise = exercises.get(i);
@@ -350,8 +352,8 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                         
                         // Format the time string
                         long startTime = exercise.getLong("start_time");
-                        int duration = exercise.getInt("duration"); // Now in minutes
-                        String timeStr = formatRelativeTime(startTime) + " • " + duration + " min";
+                        int duration = exercise.getInt("duration");
+                        String timeStr = dateFormat.format(new Date(startTime)) + " • " + duration + " min";
 
                         recentWorkouts.add(new RecentWorkout(typeSubtype, name, timeStr));
                     } catch (Exception e) {
@@ -396,26 +398,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         }
         
         return result.toString();
-    }
-
-    private String formatRelativeTime(long timestamp) {
-        long now = System.currentTimeMillis();
-        long diff = now - timestamp;
-        
-        // Convert to days
-        long days = diff / (24 * 60 * 60 * 1000);
-        
-        if (days == 0) {
-            return "Today";
-        } else if (days == 1) {
-            return "Yesterday";
-        } else if (days < 7) {
-            return days + " days ago";
-        } else {
-            // For older dates, use a simple date format
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
-            return dateFormat.format(new Date(timestamp));
-        }
     }
     
     private void setupTabs() {
