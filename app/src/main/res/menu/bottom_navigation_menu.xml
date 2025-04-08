@@ -7,7 +7,7 @@
     <item
         android:id="@+id/navigation_workout"
         android:icon="@android:drawable/ic_input_add"
-        android:title="Workout" />
+        android:title="Exercise" />
     <item
         android:id="@+id/navigation_history"
         android:icon="@android:drawable/ic_menu_recent_history"

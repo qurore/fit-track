@@ -22,7 +22,7 @@
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/deleteButton"/>
+            app:layout_constraintEnd_toStartOf="@id/editButton"/>
 
         <TextView
             android:id="@+id/workoutName"
@@ -34,7 +34,7 @@
             android:layout_marginTop="4dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/exerciseTypeSubtype"
-            app:layout_constraintEnd_toStartOf="@id/deleteButton"/>
+            app:layout_constraintEnd_toStartOf="@id/editButton"/>
 
         <TextView
             android:id="@+id/workoutTime"
@@ -45,7 +45,20 @@
             android:layout_marginTop="4dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/workoutName"
-            app:layout_constraintEnd_toStartOf="@id/deleteButton"/>
+            app:layout_constraintEnd_toStartOf="@id/editButton"/>
+
+        <ImageButton
+            android:id="@+id/editButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_edit"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Edit exercise"
+            android:padding="12dp"
+            app:layout_constraintEnd_toStartOf="@id/deleteButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:tint="@color/primary"/>
 
         <ImageButton
             android:id="@+id/deleteButton"
