@@ -23,13 +23,17 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 public class WorkoutHistoryFragment extends Fragment {
     private static final String TAG = "WorkoutHistoryFragment";
+    private static final int VIEW_TYPE_MONTH_HEADER = 0;
+    private static final int VIEW_TYPE_EXERCISE = 1;
     
     private RecyclerView workoutHistoryList;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -72,11 +76,9 @@ public class WorkoutHistoryFragment extends Fragment {
         
         // Set up add exercise link
         addExerciseLink.setOnClickListener(v -> {
-            // Navigate to workout selection screen
             if (getActivity() instanceof DashboardActivity) {
                 DashboardActivity activity = (DashboardActivity) getActivity();
                 activity.showWorkoutContent();
-                // Update bottom navigation to Workout tab
                 activity.findViewById(R.id.bottomNavigation).findViewById(R.id.navigation_workout).performClick();
             }
         });
@@ -93,11 +95,11 @@ public class WorkoutHistoryFragment extends Fragment {
             public void onSuccess(List<JSONObject> exercises) {
                 if (isAdded()) {  // Check if fragment is still attached to activity
                     swipeRefreshLayout.setRefreshing(false);
-                    List<WorkoutHistoryItem> workoutItems = convertToWorkoutItems(exercises);
-                    adapter.updateData(workoutItems);
+                    List<HistoryListItem> historyItems = convertToHistoryItems(exercises);
+                    adapter.updateData(historyItems);
                     
                     // Update visibility based on data
-                    if (workoutItems.isEmpty()) {
+                    if (historyItems.isEmpty()) {
                         noExercisesText.setVisibility(View.VISIBLE);
                         workoutHistoryList.setVisibility(View.GONE);
                     } else {
@@ -121,10 +123,15 @@ public class WorkoutHistoryFragment extends Fragment {
         });
     }
     
-    private List<WorkoutHistoryItem> convertToWorkoutItems(List<JSONObject> exercises) {
-        List<WorkoutHistoryItem> items = new ArrayList<>();
+    private List<HistoryListItem> convertToHistoryItems(List<JSONObject> exercises) {
+        List<HistoryListItem> items = new ArrayList<>();
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault());
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
         dateFormat.setTimeZone(TimeZone.getDefault());
+        monthFormat.setTimeZone(TimeZone.getDefault());
+        
+        // Sort exercises by start time in descending order and group by month
+        TreeMap<String, List<WorkoutHistoryItem>> monthlyExercises = new TreeMap<>((a, b) -> b.compareTo(a));
         
         for (JSONObject exercise : exercises) {
             try {
@@ -133,25 +140,35 @@ public class WorkoutHistoryFragment extends Fragment {
                 String type = capitalizeWords(exercise.getString("exercise_type"));
                 String subtype = capitalizeWords(exercise.getString("exercise_subtype"));
                 long startTime = exercise.getLong("start_time");
-                int duration = exercise.getInt("duration"); // Now in minutes
+                int duration = exercise.getInt("duration");
                 
                 // Format the date
                 String formattedDate = dateFormat.format(new Date(startTime));
+                String monthKey = monthFormat.format(new Date(startTime));
                 
-                // Format duration (now directly in minutes)
+                // Format duration
                 String formattedDuration = duration + " min";
                 
                 // Build additional info for cardio exercises
                 if (type.equalsIgnoreCase("Cardio") && exercise.has("distance")) {
-                    float distance = (float) exercise.getDouble("distance"); // Already in meters
+                    float distance = (float) exercise.getDouble("distance");
                     formattedDuration += " • " + distance + " m";
                 }
                 
-                items.add(new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration));
+                WorkoutHistoryItem item = new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration);
+                
+                // Add to monthly group
+                monthlyExercises.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(item);
             } catch (Exception e) {
                 // Skip invalid entries
                 continue;
             }
+        }
+        
+        // Convert grouped data to flat list with headers
+        for (String month : monthlyExercises.keySet()) {
+            items.add(new MonthHeaderItem(month));
+            items.addAll(monthlyExercises.get(month));
         }
         
         return items;
@@ -178,8 +195,27 @@ public class WorkoutHistoryFragment extends Fragment {
         return result.toString();
     }
     
-    // Data class for workout history items
-    private static class WorkoutHistoryItem {
+    // Base class for list items
+    private static abstract class HistoryListItem {
+        abstract int getType();
+    }
+    
+    // Month header item
+    private static class MonthHeaderItem extends HistoryListItem {
+        String month;
+        
+        MonthHeaderItem(String month) {
+            this.month = month;
+        }
+        
+        @Override
+        int getType() {
+            return VIEW_TYPE_MONTH_HEADER;
+        }
+    }
+    
+    // Exercise item
+    private static class WorkoutHistoryItem extends HistoryListItem {
         String id;
         String name;
         String type;
@@ -193,79 +229,119 @@ public class WorkoutHistoryFragment extends Fragment {
             this.subtype = subtype;
             this.time = time;
         }
+        
+        @Override
+        int getType() {
+            return VIEW_TYPE_EXERCISE;
+        }
     }
     
     // Adapter for workout history items
-    private class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
-        private List<WorkoutHistoryItem> workouts;
+    private class WorkoutHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private List<HistoryListItem> items;
         
-        WorkoutHistoryAdapter(List<WorkoutHistoryItem> workouts) {
-            this.workouts = workouts;
+        WorkoutHistoryAdapter(List<HistoryListItem> items) {
+            this.items = items;
         }
         
-        void updateData(List<WorkoutHistoryItem> newWorkouts) {
-            this.workouts = newWorkouts;
+        void updateData(List<HistoryListItem> newItems) {
+            this.items = newItems;
             notifyDataSetChanged();
         }
 
         void removeItem(int position) {
-            workouts.remove(position);
+            items.remove(position);
             notifyItemRemoved(position);
+            
+            // If the next item is a header and it's the last item or the next item is also a header,
+            // remove the header too
+            if (position < items.size() && items.get(position).getType() == VIEW_TYPE_MONTH_HEADER) {
+                if (position == items.size() - 1 || 
+                    (position + 1 < items.size() && items.get(position + 1).getType() == VIEW_TYPE_MONTH_HEADER)) {
+                    items.remove(position);
+                    notifyItemRemoved(position);
+                }
+            }
+        }
+        
+        @Override
+        public int getItemViewType(int position) {
+            return items.get(position).getType();
         }
         
         @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_workout_history, parent, false);
-            return new ViewHolder(view);
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            if (viewType == VIEW_TYPE_MONTH_HEADER) {
+                View view = inflater.inflate(R.layout.item_month_header, parent, false);
+                return new MonthHeaderViewHolder(view);
+            } else {
+                View view = inflater.inflate(R.layout.item_workout_history, parent, false);
+                return new ExerciseViewHolder(view);
+            }
         }
         
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            WorkoutHistoryItem workout = workouts.get(position);
-            holder.exerciseTypeSubtype.setText(String.format("%s - %s", workout.type, workout.subtype));
-            holder.workoutName.setText(workout.name);
-            holder.workoutTime.setText(workout.time);
-            
-            holder.deleteButton.setOnClickListener(v -> {
-                new AlertDialog.Builder(requireContext())
-                    .setTitle("Delete Exercise")
-                    .setMessage("Are you sure you want to delete this exercise?")
-                    .setPositiveButton("Delete", (dialog, which) -> {
-                        exerciseService.deleteExercise(workout.id, new ExerciseService.DeleteCallback() {
-                            @Override
-                            public void onSuccess() {
-                                removeItem(holder.getAdapterPosition());
-                                if (workouts.isEmpty()) {
-                                    noExercisesText.setVisibility(View.VISIBLE);
-                                    workoutHistoryList.setVisibility(View.GONE);
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            if (holder instanceof MonthHeaderViewHolder) {
+                MonthHeaderItem header = (MonthHeaderItem) items.get(position);
+                ((MonthHeaderViewHolder) holder).monthText.setText(header.month);
+            } else if (holder instanceof ExerciseViewHolder) {
+                WorkoutHistoryItem workout = (WorkoutHistoryItem) items.get(position);
+                ExerciseViewHolder exerciseHolder = (ExerciseViewHolder) holder;
+                exerciseHolder.exerciseTypeSubtype.setText(String.format("%s - %s", workout.type, workout.subtype));
+                exerciseHolder.workoutName.setText(workout.name);
+                exerciseHolder.workoutTime.setText(workout.time);
+                
+                exerciseHolder.deleteButton.setOnClickListener(v -> {
+                    new AlertDialog.Builder(requireContext())
+                        .setTitle("Delete Exercise")
+                        .setMessage("Are you sure you want to delete this exercise?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            exerciseService.deleteExercise(workout.id, new ExerciseService.DeleteCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    removeItem(holder.getAdapterPosition());
+                                    if (items.isEmpty()) {
+                                        noExercisesText.setVisibility(View.VISIBLE);
+                                        workoutHistoryList.setVisibility(View.GONE);
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-            });
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+                });
+            }
         }
         
         @Override
         public int getItemCount() {
-            return workouts.size();
+            return items.size();
         }
         
-        class ViewHolder extends RecyclerView.ViewHolder {
+        class MonthHeaderViewHolder extends RecyclerView.ViewHolder {
+            TextView monthText;
+            
+            MonthHeaderViewHolder(View itemView) {
+                super(itemView);
+                monthText = itemView.findViewById(R.id.monthText);
+            }
+        }
+        
+        class ExerciseViewHolder extends RecyclerView.ViewHolder {
             TextView exerciseTypeSubtype;
             TextView workoutName;
             TextView workoutTime;
             ImageButton deleteButton;
             
-            ViewHolder(View itemView) {
+            ExerciseViewHolder(View itemView) {
                 super(itemView);
                 exerciseTypeSubtype = itemView.findViewById(R.id.exerciseTypeSubtype);
                 workoutName = itemView.findViewById(R.id.workoutName);
