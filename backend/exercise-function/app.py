@@ -20,6 +20,7 @@ def create_exercise(user_id: str, exercise_data: Dict) -> Dict:
     exercise_doc = {
         "user_id": user_id,
         "exercise_type": exercise_data.get("exercise_type"),  # 'strength', 'cardio', 'flexibility', 'functional'
+        "exercise_subtype": exercise_data.get("exercise_subtype"),  # Add exercise subtype
         "exercise_name": exercise_data.get("exercise_name"),
         "start_time": exercise_data.get("start_time"),
         "duration": exercise_data.get("duration"),
@@ -48,6 +49,7 @@ def update_exercise(user_id: str, exercise_id: str, exercise_data: Dict) -> Opti
     try:
         exercise_doc = {
             "exercise_type": exercise_data.get("exercise_type"),
+            "exercise_subtype": exercise_data.get("exercise_subtype"),  # Add exercise subtype
             "exercise_name": exercise_data.get("exercise_name"),
             "start_time": exercise_data.get("start_time"),
             "duration": exercise_data.get("duration"),

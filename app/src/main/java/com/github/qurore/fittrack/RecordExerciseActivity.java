@@ -129,7 +129,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
         updateDateTimeButtons();
 
         // Set up save button
-        saveButton.setOnClickListener(v -> saveExercise(type));
+        saveButton.setOnClickListener(v -> saveExercise(type, subtype));
     }
 
     private void setupDurationUnitDropdown() {
@@ -232,7 +232,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
         return distance; // Already in meters
     }
 
-    private void saveExercise(String type) {
+    private void saveExercise(String type, String subtype) {
         // Validate required fields
         if (!validateCommonFields()) {
             return;
@@ -259,6 +259,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 exerciseData.put("start_time", startTime);
                 exerciseData.put("duration", duration);
                 exerciseData.put("notes", notes);
+                exerciseData.put("exercise_subtype", subtype.toLowerCase());
 
                 // Add type-specific fields
                 switch (type) {
