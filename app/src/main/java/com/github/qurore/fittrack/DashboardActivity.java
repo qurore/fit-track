@@ -567,7 +567,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView workoutName;
             TextView workoutTime;
-            Button detailsButton;
+            ImageButton detailsButton;
             
             ViewHolder(View itemView) {
                 super(itemView);
