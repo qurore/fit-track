@@ -1,8 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#0f7670</color>
-    <color name="colorPrimaryDark">#0b5550</color>
-    <color name="colorAccent">#12908a</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Legacy color names (required for backward compatibility) -->
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorPrimaryDark">@color/primary_dark</color>
+    <color name="colorAccent">@color/accent</color>
+
+    <!-- Base application colors -->
+    <color name="primary">#0f7670</color>
+    <color name="primary_dark">#0b5854</color>
+    <color name="primary_light">#4ca49e</color>
+    <color name="accent">#ff5722</color>
+
+    <!-- Common colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray">#757575</color>
+    <color name="light_gray">#EEEEEE</color>
+
+    <!-- Semantic colors -->
+    <color name="error">#B00020</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Status bar and navigation colors -->
+    <color name="status_bar">#0b5854</color>
+    <color name="navigation_bar">@color/white</color>
+    <color name="navigation_bar_divider">#1F000000</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_disabled">#9E9E9E</color>
+    <color name="text_on_primary">@color/white</color>
+    <color name="text_on_error">@color/white</color>
+
+    <!-- Background colors -->
+    <color name="background">@color/white</color>
+    <color name="surface">@color/white</color>
+    <color name="divider">#1F000000</color>
 </resources>

@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -123,6 +125,7 @@ public class WorkoutHistoryFragment extends Fragment {
         
         for (JSONObject exercise : exercises) {
             try {
+                String id = exercise.getString("_id");
                 String name = capitalizeWords(exercise.getString("exercise_name"));
                 String type = capitalizeWords(exercise.getString("exercise_type"));
                 String subtype = capitalizeWords(exercise.getString("exercise_subtype"));
@@ -135,7 +138,7 @@ public class WorkoutHistoryFragment extends Fragment {
                 // Format duration
                 String formattedDuration = formatDuration(duration);
                 
-                items.add(new WorkoutHistoryItem(name, type, subtype, formattedDate + " • " + formattedDuration));
+                items.add(new WorkoutHistoryItem(id, name, type, subtype, formattedDate + " • " + formattedDuration));
             } catch (Exception e) {
                 // Skip invalid entries
                 continue;
@@ -177,12 +180,14 @@ public class WorkoutHistoryFragment extends Fragment {
     
     // Data class for workout history items
     private static class WorkoutHistoryItem {
+        String id;
         String name;
         String type;
         String subtype;
         String time;
         
-        WorkoutHistoryItem(String name, String type, String subtype, String time) {
+        WorkoutHistoryItem(String id, String name, String type, String subtype, String time) {
+            this.id = id;
             this.name = name;
             this.type = type;
             this.subtype = subtype;
@@ -191,7 +196,7 @@ public class WorkoutHistoryFragment extends Fragment {
     }
     
     // Adapter for workout history items
-    private static class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
+    private class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
         private List<WorkoutHistoryItem> workouts;
         
         WorkoutHistoryAdapter(List<WorkoutHistoryItem> workouts) {
@@ -201,6 +206,11 @@ public class WorkoutHistoryFragment extends Fragment {
         void updateData(List<WorkoutHistoryItem> newWorkouts) {
             this.workouts = newWorkouts;
             notifyDataSetChanged();
+        }
+
+        void removeItem(int position) {
+            workouts.remove(position);
+            notifyItemRemoved(position);
         }
         
         @NonNull
@@ -217,6 +227,31 @@ public class WorkoutHistoryFragment extends Fragment {
             holder.exerciseTypeSubtype.setText(String.format("%s - %s", workout.type, workout.subtype));
             holder.workoutName.setText(workout.name);
             holder.workoutTime.setText(workout.time);
+            
+            holder.deleteButton.setOnClickListener(v -> {
+                new AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Exercise")
+                    .setMessage("Are you sure you want to delete this exercise?")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        exerciseService.deleteExercise(workout.id, new ExerciseService.DeleteCallback() {
+                            @Override
+                            public void onSuccess() {
+                                removeItem(holder.getAdapterPosition());
+                                if (workouts.isEmpty()) {
+                                    noExercisesText.setVisibility(View.VISIBLE);
+                                    workoutHistoryList.setVisibility(View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
         }
         
         @Override
@@ -224,16 +259,18 @@ public class WorkoutHistoryFragment extends Fragment {
             return workouts.size();
         }
         
-        static class ViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
             TextView exerciseTypeSubtype;
             TextView workoutName;
             TextView workoutTime;
+            ImageButton deleteButton;
             
             ViewHolder(View itemView) {
                 super(itemView);
                 exerciseTypeSubtype = itemView.findViewById(R.id.exerciseTypeSubtype);
                 workoutName = itemView.findViewById(R.id.workoutName);
                 workoutTime = itemView.findViewById(R.id.workoutTime);
+                deleteButton = itemView.findViewById(R.id.deleteButton);
             }
         }
     }

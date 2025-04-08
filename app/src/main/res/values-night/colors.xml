@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Legacy color names (required for backward compatibility) -->
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorPrimaryDark">@color/primary_dark</color>
+    <color name="colorAccent">@color/accent</color>
+
+    <!-- Base application colors -->
+    <color name="primary">#0f7670</color>
+    <color name="primary_dark">#0b5854</color>
+    <color name="primary_light">#4ca49e</color>
+    <color name="accent">#ff5722</color>
+
+    <!-- Common colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="light_gray">#424242</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_disabled">#80FFFFFF</color>
+
+    <!-- Background colors -->
+    <color name="background">#121212</color>
+    <color name="surface">#121212</color>
+    <color name="divider">#1FFFFFFF</color>
+</resources> 

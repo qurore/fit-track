@@ -93,6 +93,17 @@ def get_user_exercises(user_id: str, exercise_type: Optional[str] = None) -> Lis
     exercises = list(exercises_collection.find(query))
     return parse_json(exercises)
 
+def delete_exercise(user_id: str, exercise_id: str) -> bool:
+    """Delete an exercise record."""
+    try:
+        result = exercises_collection.delete_one({
+            "_id": ObjectId(exercise_id),
+            "user_id": user_id
+        })
+        return result.deleted_count > 0
+    except Exception as e:
+        raise Exception(f"Error deleting exercise: {str(e)}")
+
 def lambda_handler(event, context):
     """Main Lambda handler function."""
     try:
@@ -194,6 +205,27 @@ def lambda_handler(event, context):
             return {
                 'statusCode': 200,
                 'body': json.dumps(result)
+            }
+
+        elif http_method == 'DELETE':
+            # Delete exercise
+            exercise_id = path_parameters.get('id')
+            if not exercise_id:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps({'message': 'Exercise ID is required'})
+                }
+            
+            result = delete_exercise(user_id, exercise_id)
+            if not result:
+                return {
+                    'statusCode': 404,
+                    'body': json.dumps({'message': 'Exercise not found'})
+                }
+
+            return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'Exercise deleted successfully'})
             }
 
         else:

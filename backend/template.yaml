@@ -98,6 +98,11 @@ Resources:
           Properties:
             Path: /exercises/{id}
             Method: put
+        DeleteExercise:
+          Type: Api
+          Properties:
+            Path: /exercises/{id}
+            Method: delete
 
   HelloWorldFunction:
     Type: AWS::Serverless::Function
