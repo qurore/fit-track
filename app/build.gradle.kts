@@ -65,6 +65,9 @@ dependencies {
     implementation("androidx.core:core:1.12.0")
     implementation("androidx.window:window:1.2.0")
     
+    // SwipeRefreshLayout dependency
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    
     // Original MongoDB Java Driver with packaging exclusions and excluding bson-record-codec
     // implementation("org.mongodb:mongodb-driver-sync:4.9.1") {
     //     exclude(group = "org.mongodb", module = "bson-record-codec")

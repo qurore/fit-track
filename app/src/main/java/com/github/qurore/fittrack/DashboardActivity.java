@@ -277,7 +277,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         settingsContentLayout.setVisibility(View.GONE);
     }
     
-    private void showWorkoutContent() {
+    public void showWorkoutContent() {
         homeContentLayout.setVisibility(View.GONE);
         workoutContentLayout.setVisibility(View.VISIBLE);
         workoutHistoryContentLayout.setVisibility(View.GONE);
@@ -292,11 +292,12 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         historyContentLayout.setVisibility(View.GONE);
         settingsContentLayout.setVisibility(View.GONE);
         
-        // Load the WorkoutHistoryFragment if it's not already added
+        // Initialize WorkoutHistoryFragment if not already done
         if (getSupportFragmentManager().findFragmentById(R.id.workoutHistoryContentLayout) == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.workoutHistoryContentLayout, WorkoutHistoryFragment.newInstance())
-                    .commit();
+            getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.workoutHistoryContentLayout, WorkoutHistoryFragment.newInstance())
+                .commit();
         }
     }
     
@@ -315,19 +316,13 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         historyContentLayout.setVisibility(View.GONE);
         settingsContentLayout.setVisibility(View.VISIBLE);
         
-        // Load the SettingsFragment if it's not already added
+        // Initialize SettingsFragment if not already done
         if (getSupportFragmentManager().findFragmentById(R.id.settingsContentLayout) == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.settingsContentLayout, SettingsFragment.newInstance(userName))
-                    .commit();
+            getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.settingsContentLayout, SettingsFragment.newInstance(userName))
+                .commit();
         }
-        
-        // Unselect all bottom navigation items
-        bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-        for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
-            bottomNavigationView.getMenu().getItem(i).setChecked(false);
-        }
-        bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
     }
     
     // Data class for recent workouts

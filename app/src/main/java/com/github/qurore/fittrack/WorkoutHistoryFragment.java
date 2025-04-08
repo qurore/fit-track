@@ -1,24 +1,40 @@
 package com.github.qurore.fittrack;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.util.Arrays;
+import com.github.qurore.fittrack.services.ExerciseService;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class WorkoutHistoryFragment extends Fragment {
-
+    private static final String TAG = "WorkoutHistoryFragment";
+    
     private RecyclerView workoutHistoryList;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ExerciseService exerciseService;
+    private WorkoutHistoryAdapter adapter;
+    private TextView noExercisesText;
+    private TextView addExerciseLink;
 
     public static WorkoutHistoryFragment newInstance() {
         return new WorkoutHistoryFragment();
@@ -34,31 +50,106 @@ public class WorkoutHistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        // Initialize RecyclerView
+        exerciseService = new ExerciseService(requireContext());
+        
+        // Initialize views
         workoutHistoryList = view.findViewById(R.id.workoutHistoryList);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+        noExercisesText = view.findViewById(R.id.noExercisesText);
+        addExerciseLink = view.findViewById(R.id.addExerciseLink);
+        
+        // Set up RecyclerView
         workoutHistoryList.setLayoutManager(new LinearLayoutManager(getContext()));
         
-        // Set up with sample data (in a real app, this would come from a database)
-        setupWorkoutHistoryList();
+        // Initialize SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener(this::loadExercises);
+        
+        // Initialize adapter with empty list
+        adapter = new WorkoutHistoryAdapter(new ArrayList<>());
+        workoutHistoryList.setAdapter(adapter);
+        
+        // Set up add exercise link
+        addExerciseLink.setOnClickListener(v -> {
+            // Navigate to workout selection screen
+            if (getActivity() instanceof DashboardActivity) {
+                ((DashboardActivity) getActivity()).showWorkoutContent();
+            }
+        });
+        
+        // Load exercises
+        loadExercises();
     }
     
-    private void setupWorkoutHistoryList() {
-        // Sample data - in a real app, this would load from a database
-        List<WorkoutHistoryItem> workouts = Arrays.asList(
-            new WorkoutHistoryItem("Upper Body", "Today • 45 min"),
-            new WorkoutHistoryItem("Cardio", "Yesterday • 30 min"),
-            new WorkoutHistoryItem("Leg Day", "2 days ago • 60 min"),
-            new WorkoutHistoryItem("Core Workout", "3 days ago • 25 min"),
-            new WorkoutHistoryItem("Full Body", "5 days ago • 50 min"),
-            new WorkoutHistoryItem("Upper Body", "1 week ago • 45 min"),
-            new WorkoutHistoryItem("Cardio", "1 week ago • 30 min"),
-            new WorkoutHistoryItem("Leg Day", "2 weeks ago • 60 min"),
-            new WorkoutHistoryItem("Core Workout", "2 weeks ago • 25 min"),
-            new WorkoutHistoryItem("Full Body", "3 weeks ago • 50 min")
-        );
+    private void loadExercises() {
+        swipeRefreshLayout.setRefreshing(true);
         
-        WorkoutHistoryAdapter adapter = new WorkoutHistoryAdapter(workouts);
-        workoutHistoryList.setAdapter(adapter);
+        exerciseService.getAllExercises(new ExerciseService.ExerciseCallback() {
+            @Override
+            public void onSuccess(List<JSONObject> exercises) {
+                if (isAdded()) {  // Check if fragment is still attached to activity
+                    swipeRefreshLayout.setRefreshing(false);
+                    List<WorkoutHistoryItem> workoutItems = convertToWorkoutItems(exercises);
+                    adapter.updateData(workoutItems);
+                    
+                    // Update visibility based on data
+                    if (workoutItems.isEmpty()) {
+                        noExercisesText.setVisibility(View.VISIBLE);
+                        workoutHistoryList.setVisibility(View.GONE);
+                    } else {
+                        noExercisesText.setVisibility(View.GONE);
+                        workoutHistoryList.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                if (isAdded()) {  // Check if fragment is still attached to activity
+                    swipeRefreshLayout.setRefreshing(false);
+                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                    
+                    // Show no exercises text on error
+                    noExercisesText.setVisibility(View.VISIBLE);
+                    workoutHistoryList.setVisibility(View.GONE);
+                }
+            }
+        });
+    }
+    
+    private List<WorkoutHistoryItem> convertToWorkoutItems(List<JSONObject> exercises) {
+        List<WorkoutHistoryItem> items = new ArrayList<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy • HH:mm", Locale.getDefault());
+        dateFormat.setTimeZone(TimeZone.getDefault());
+        
+        for (JSONObject exercise : exercises) {
+            try {
+                String name = exercise.getString("exercise_name");
+                long startTime = exercise.getLong("start_time");
+                int duration = exercise.getInt("duration");
+                
+                // Format the date
+                String formattedDate = dateFormat.format(new Date(startTime));
+                
+                // Format duration
+                String formattedDuration = formatDuration(duration);
+                
+                items.add(new WorkoutHistoryItem(name, formattedDate + " • " + formattedDuration));
+            } catch (Exception e) {
+                // Skip invalid entries
+                continue;
+            }
+        }
+        
+        return items;
+    }
+    
+    private String formatDuration(int seconds) {
+        if (seconds < 60) {
+            return seconds + " sec";
+        } else {
+            int minutes = seconds / 60;
+            return minutes + " min";
+        }
     }
     
     // Data class for workout history items
@@ -73,35 +164,31 @@ public class WorkoutHistoryFragment extends Fragment {
     }
     
     // Adapter for workout history items
-    private class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
+    private static class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
         private List<WorkoutHistoryItem> workouts;
         
         WorkoutHistoryAdapter(List<WorkoutHistoryItem> workouts) {
             this.workouts = workouts;
         }
         
+        void updateData(List<WorkoutHistoryItem> newWorkouts) {
+            this.workouts = newWorkouts;
+            notifyDataSetChanged();
+        }
+        
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.item_recent_workout, parent, false);
+                .inflate(R.layout.item_workout_history, parent, false);
             return new ViewHolder(view);
         }
         
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             WorkoutHistoryItem workout = workouts.get(position);
-            
             holder.workoutName.setText(workout.name);
             holder.workoutTime.setText(workout.time);
-            
-            holder.detailsButton.setOnClickListener(v -> {
-                // Handle details button click - navigate to workout details
-                // For now, just showing a placeholder implementation
-                if (getActivity() != null) {
-                    // In a real app, you would navigate to a workout details activity/fragment
-                }
-            });
         }
         
         @Override
@@ -109,16 +196,14 @@ public class WorkoutHistoryFragment extends Fragment {
             return workouts.size();
         }
         
-        class ViewHolder extends RecyclerView.ViewHolder {
+        static class ViewHolder extends RecyclerView.ViewHolder {
             TextView workoutName;
             TextView workoutTime;
-            Button detailsButton;
             
             ViewHolder(View itemView) {
                 super(itemView);
                 workoutName = itemView.findViewById(R.id.workoutName);
                 workoutTime = itemView.findViewById(R.id.workoutTime);
-                detailsButton = itemView.findViewById(R.id.detailsButton);
             }
         }
     }

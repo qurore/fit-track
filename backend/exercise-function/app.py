@@ -49,7 +49,7 @@ def update_exercise(user_id: str, exercise_id: str, exercise_data: Dict) -> Opti
     try:
         exercise_doc = {
             "exercise_type": exercise_data.get("exercise_type"),
-            "exercise_subtype": exercise_data.get("exercise_subtype"),  # Add exercise subtype
+            "exercise_subtype": exercise_data.get("exercise_subtype"),
             "exercise_name": exercise_data.get("exercise_name"),
             "start_time": exercise_data.get("start_time"),
             "duration": exercise_data.get("duration"),
@@ -96,15 +96,61 @@ def get_user_exercises(user_id: str, exercise_type: Optional[str] = None) -> Lis
 def lambda_handler(event, context):
     """Main Lambda handler function."""
     try:
-        # Get user ID from the authorizer context
-        user_id = event['requestContext']['authorizer']['uid']
-        http_method = event['httpMethod']
+        # Log the incoming event for debugging
+        print(f"Received event: {json.dumps(event)}")
+        
+        # Validate event structure
+        if not event:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'message': 'Event object is empty'})
+            }
+            
+        # Check if this is a test event from API Gateway
+        if event.get('source') == 'aws.events':
+            return {
+                'statusCode': 200,
+                'body': json.dumps({'message': 'Test event received successfully'})
+            }
+            
+        # Get user ID from the authorizer context with proper error handling
+        try:
+            user_id = event.get('requestContext', {}).get('authorizer', {}).get('uid')
+            if not user_id:
+                print("Error: User ID not found in event context")
+                print(f"RequestContext: {json.dumps(event.get('requestContext', {}))}")
+                return {
+                    'statusCode': 401,
+                    'body': json.dumps({'message': 'Unauthorized - User ID not found'})
+                }
+        except Exception as e:
+            print(f"Error extracting user ID: {str(e)}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'message': 'Error processing authorization'})
+            }
+
+        # Get HTTP method with proper error handling
+        http_method = event.get('httpMethod')
+        if not http_method:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'message': 'HTTP method not specified'})
+            }
+
         path_parameters = event.get('pathParameters', {})
         query_parameters = event.get('queryStringParameters', {})
 
         if http_method == 'POST':
             # Create new exercise
-            body = json.loads(event['body'])
+            try:
+                body = json.loads(event.get('body', '{}'))
+            except json.JSONDecodeError:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps({'message': 'Invalid JSON in request body'})
+                }
+                
             result = create_exercise(user_id, body)
             return {
                 'statusCode': 201,
@@ -120,7 +166,14 @@ def lambda_handler(event, context):
                     'body': json.dumps({'message': 'Exercise ID is required'})
                 }
 
-            body = json.loads(event['body'])
+            try:
+                body = json.loads(event.get('body', '{}'))
+            except json.JSONDecodeError:
+                return {
+                    'statusCode': 400,
+                    'body': json.dumps({'message': 'Invalid JSON in request body'})
+                }
+            
             result = update_exercise(user_id, exercise_id, body)
             
             if result is None:
@@ -136,7 +189,7 @@ def lambda_handler(event, context):
 
         elif http_method == 'GET':
             # Get user exercises
-            exercise_type = query_parameters.get('type')
+            exercise_type = query_parameters.get('type') if query_parameters else None
             result = get_user_exercises(user_id, exercise_type)
             return {
                 'statusCode': 200,
@@ -150,8 +203,12 @@ def lambda_handler(event, context):
             }
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in lambda_handler: {str(e)}")
+        print(f"Event that caused the error: {json.dumps(event)}")
         return {
             'statusCode': 500,
-            'body': json.dumps({'message': 'Internal server error'})
+            'body': json.dumps({
+                'message': 'Internal server error',
+                'error': str(e)
+            })
         } 
