@@ -123,9 +123,9 @@ public class WorkoutHistoryFragment extends Fragment {
         
         for (JSONObject exercise : exercises) {
             try {
-                String name = exercise.getString("exercise_name");
-                String type = capitalizeFirstLetter(exercise.getString("exercise_type"));
-                String subtype = capitalizeFirstLetter(exercise.getString("exercise_subtype"));
+                String name = capitalizeWords(exercise.getString("exercise_name"));
+                String type = capitalizeWords(exercise.getString("exercise_type"));
+                String subtype = capitalizeWords(exercise.getString("exercise_subtype"));
                 long startTime = exercise.getLong("start_time");
                 int duration = exercise.getInt("duration");
                 
@@ -145,11 +145,25 @@ public class WorkoutHistoryFragment extends Fragment {
         return items;
     }
     
-    private String capitalizeFirstLetter(String text) {
+    private String capitalizeWords(String text) {
         if (text == null || text.isEmpty()) {
             return text;
         }
-        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
+        
+        String[] words = text.toLowerCase().split("\\s+");
+        StringBuilder result = new StringBuilder();
+        
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                if (result.length() > 0) {
+                    result.append(" ");
+                }
+                result.append(Character.toUpperCase(word.charAt(0)))
+                      .append(word.substring(1));
+            }
+        }
+        
+        return result.toString();
     }
     
     private String formatDuration(int seconds) {

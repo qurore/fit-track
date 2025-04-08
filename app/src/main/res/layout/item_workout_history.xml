@@ -20,8 +20,7 @@
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:textColor="?android:textColorSecondary"
-            android:textAllCaps="true"
-            android:letterSpacing="0.1"
+            android:letterSpacing="0.05"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
