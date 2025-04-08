@@ -38,7 +38,6 @@
         android:dividerHeight="1dp"
         android:groupIndicator="@null"
         android:listSelector="@android:color/transparent"
-        android:background="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/selectExerciseSubtitle" />
 
