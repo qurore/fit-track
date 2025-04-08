@@ -124,6 +124,8 @@ public class WorkoutHistoryFragment extends Fragment {
         for (JSONObject exercise : exercises) {
             try {
                 String name = exercise.getString("exercise_name");
+                String type = capitalizeFirstLetter(exercise.getString("exercise_type"));
+                String subtype = capitalizeFirstLetter(exercise.getString("exercise_subtype"));
                 long startTime = exercise.getLong("start_time");
                 int duration = exercise.getInt("duration");
                 
@@ -133,7 +135,7 @@ public class WorkoutHistoryFragment extends Fragment {
                 // Format duration
                 String formattedDuration = formatDuration(duration);
                 
-                items.add(new WorkoutHistoryItem(name, formattedDate + " • " + formattedDuration));
+                items.add(new WorkoutHistoryItem(name, type, subtype, formattedDate + " • " + formattedDuration));
             } catch (Exception e) {
                 // Skip invalid entries
                 continue;
@@ -141,6 +143,13 @@ public class WorkoutHistoryFragment extends Fragment {
         }
         
         return items;
+    }
+    
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
     
     private String formatDuration(int seconds) {
@@ -155,10 +164,14 @@ public class WorkoutHistoryFragment extends Fragment {
     // Data class for workout history items
     private static class WorkoutHistoryItem {
         String name;
+        String type;
+        String subtype;
         String time;
         
-        WorkoutHistoryItem(String name, String time) {
+        WorkoutHistoryItem(String name, String type, String subtype, String time) {
             this.name = name;
+            this.type = type;
+            this.subtype = subtype;
             this.time = time;
         }
     }
@@ -187,6 +200,7 @@ public class WorkoutHistoryFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             WorkoutHistoryItem workout = workouts.get(position);
+            holder.exerciseTypeSubtype.setText(String.format("%s - %s", workout.type, workout.subtype));
             holder.workoutName.setText(workout.name);
             holder.workoutTime.setText(workout.time);
         }
@@ -197,11 +211,13 @@ public class WorkoutHistoryFragment extends Fragment {
         }
         
         static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView exerciseTypeSubtype;
             TextView workoutName;
             TextView workoutTime;
             
             ViewHolder(View itemView) {
                 super(itemView);
+                exerciseTypeSubtype = itemView.findViewById(R.id.exerciseTypeSubtype);
                 workoutName = itemView.findViewById(R.id.workoutName);
                 workoutTime = itemView.findViewById(R.id.workoutTime);
             }
