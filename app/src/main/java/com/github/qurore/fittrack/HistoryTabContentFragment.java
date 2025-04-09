@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +51,7 @@ public class HistoryTabContentFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         
         dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        selectedTypes = new ArrayList<>();
+        selectedTypes = new ArrayList<>(Arrays.asList("Strength", "Cardio", "Flexibility", "Functional"));
         
         // Initialize calendars
         startDate = Calendar.getInstance();
@@ -68,6 +69,12 @@ public class HistoryTabContentFragment extends Fragment {
         cardioCheckbox = view.findViewById(R.id.cardioCheckbox);
         flexibilityCheckbox = view.findViewById(R.id.flexibilityCheckbox);
         functionalCheckbox = view.findViewById(R.id.functionalCheckbox);
+        
+        // Set all checkboxes checked by default
+        strengthCheckbox.setChecked(true);
+        cardioCheckbox.setChecked(true);
+        flexibilityCheckbox.setChecked(true);
+        functionalCheckbox.setChecked(true);
         
         // Set up checkbox listeners
         setupCheckboxListeners();
