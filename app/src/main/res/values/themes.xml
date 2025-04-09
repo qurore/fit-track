@@ -17,4 +17,11 @@
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowContentTransitions">true</item>
     </style>
+
+    <style name="DatePickerDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorAccent">@color/primary</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="android:colorAccent">@color/primary</item>
+    </style>
 </resources>

@@ -15,6 +15,7 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import android.view.ContextThemeWrapper;
 
 public class HistoryTabContentFragment extends Fragment {
     private static final String ARG_TITLE = "title";
@@ -79,7 +80,7 @@ public class HistoryTabContentFragment extends Fragment {
     private void showDatePicker(boolean isStartDate) {
         Calendar calendar = isStartDate ? startDate : endDate;
         DatePickerDialog datePickerDialog = new DatePickerDialog(
-            requireContext(),
+            new ContextThemeWrapper(requireContext(), R.style.DatePickerDialogTheme),
             (view, year, month, dayOfMonth) -> {
                 Calendar selectedDate = Calendar.getInstance();
                 selectedDate.set(year, month, dayOfMonth);
