@@ -67,7 +67,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_edit"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="Edit workout"
             android:padding="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
