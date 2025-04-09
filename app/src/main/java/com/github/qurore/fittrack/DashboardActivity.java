@@ -601,19 +601,5 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     public void onNameUpdated(String newName) {
         Log.d("DashboardActivity", "onNameUpdated called with new name: " + newName);
         headerUsernameTextView.setText(newName);
-
-        // Optionally, you might want to navigate away from the settings screen
-        // or provide some other visual feedback here.
-        // For now, just updating the display fields.
-
-        // If the settings fragment is still visible, we might want to update its internal state too,
-        // although SettingsFragment already updates its 'currentUserName'.
-        // If needed, find the fragment and update it:
-        /*
-        SettingsFragment settingsFragment = (SettingsFragment) getSupportFragmentManager().findFragmentById(R.id.settingsContentLayout);
-        if (settingsFragment != null) {
-            // Potentially call a method on settingsFragment if it needs to react further
-        }
-        */
     }
 } 
