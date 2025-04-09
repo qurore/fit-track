@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Account"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -59,7 +59,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_edit"
-                    app:tint="@color/colorPrimary" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="About"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -101,7 +101,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_info_details"
-                    app:tint="@color/colorPrimary" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -126,7 +126,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_help"
-                    app:tint="@color/colorPrimary" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:layout_width="wrap_content"

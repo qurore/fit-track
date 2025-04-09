@@ -133,7 +133,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:text="View All"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/primary"
         app:layout_constraintBottom_toBottomOf="@id/recentWorkoutsTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/recentWorkoutsTitle" />

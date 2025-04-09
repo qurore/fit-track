@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:text="Add new exercise"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/primary"
         android:padding="8dp"
         android:clickable="true"
         android:focusable="true"
