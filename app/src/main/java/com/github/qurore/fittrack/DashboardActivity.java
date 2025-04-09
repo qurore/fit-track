@@ -346,6 +346,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 for (int i = 0; i < Math.min(3, exercises.size()); i++) {
                     try {
                         JSONObject exercise = exercises.get(i);
+                        String id = exercise.getString("_id");
                         String typeSubtype = capitalizeWords(exercise.getString("exercise_type")) + " - " +
                                            capitalizeWords(exercise.getString("exercise_subtype"));
                         String name = capitalizeWords(exercise.getString("exercise_name"));
@@ -355,7 +356,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                         int duration = exercise.getInt("duration");
                         String timeStr = dateFormat.format(new Date(startTime)) + " • " + duration + " min";
 
-                        recentWorkouts.add(new RecentWorkout(typeSubtype, name, timeStr));
+                        recentWorkouts.add(new RecentWorkout(id, typeSubtype, name, timeStr, exercise));
                     } catch (Exception e) {
                         Log.e("DashboardActivity", "Error processing exercise", e);
                     }
@@ -505,14 +506,18 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     // Data class for recent workouts
     private static class RecentWorkout {
+        String id;
         String typeSubtype;
         String name;
         String time;
+        JSONObject completeData;
         
-        RecentWorkout(String typeSubtype, String name, String time) {
+        RecentWorkout(String id, String typeSubtype, String name, String time, JSONObject completeData) {
+            this.id = id;
             this.typeSubtype = typeSubtype;
             this.name = name;
             this.time = time;
+            this.completeData = completeData;
         }
     }
     
@@ -538,10 +543,35 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
             holder.workoutTime.setText(workout.time);
             
             holder.detailsButton.setOnClickListener(v -> {
-                // Handle workout details click
-                android.widget.Toast.makeText(DashboardActivity.this, 
-                    "Viewing details for " + workout.name, 
-                    android.widget.Toast.LENGTH_SHORT).show();
+                // Open RecordExerciseActivity in edit mode with the exercise data
+                try {
+                    // Create intent to launch RecordExerciseActivity
+                    Intent intent = new Intent(DashboardActivity.this, RecordExerciseActivity.class);
+                    
+                    // Extract exercise type and subtype from the combined string
+                    String[] typeParts = workout.typeSubtype.split(" - ");
+                    String type = typeParts[0].trim();
+                    String subtype = typeParts.length > 1 ? typeParts[1].trim() : "";
+                    
+                    // Set edit mode and exercise ID
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EDIT_MODE, true);
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_ID, workout.id);
+                    
+                    // Put exercise data
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_NAME, workout.name);
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_TYPE, type);
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_SUBTYPE, subtype);
+                    
+                    // Include full exercise details as a JSON string
+                    intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_DATA, workout.completeData.toString());
+                    
+                    // Start activity
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(DashboardActivity.this, 
+                        "Error opening exercise: " + e.getMessage(), 
+                        Toast.LENGTH_SHORT).show();
+                }
             });
         }
         
