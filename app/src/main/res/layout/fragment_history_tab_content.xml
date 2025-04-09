@@ -15,76 +15,81 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Time Scale Selector -->
-    <RadioGroup
-        android:id="@+id/timeScaleRadioGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/historyTabContentTitle">
-
-        <RadioButton
-            android:id="@+id/dailyRadioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Daily"
-            android:checked="true" />
-
-        <RadioButton
-            android:id="@+id/weeklyRadioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Weekly" />
-
-        <RadioButton
-            android:id="@+id/monthlyRadioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Monthly" />
-
-        <RadioButton
-            android:id="@+id/yearlyRadioButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Yearly" />
-    </RadioGroup>
-
-    <!-- Graph Type Selector -->
-    <RadioGroup
-        android:id="@+id/graphTypeRadioGroup"
+    <!-- Date Range Selection Layout -->
+    <LinearLayout
+        android:id="@+id/dateRangeLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:padding="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/timeScaleRadioGroup">
+        app:layout_constraintTop_toBottomOf="@+id/historyTabContentTitle">
 
-        <RadioButton
-            android:id="@+id/timeGraphRadioButton"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Time Graph"
-            android:checked="true" />
+            android:orientation="vertical"
+            android:gravity="center">
 
-        <RadioButton
-            android:id="@+id/strengthGraphRadioButton"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="From"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <TextView
+                android:id="@+id/startDateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp"
+                android:textSize="16sp"
+                android:textColor="#0f7670" />
+        </LinearLayout>
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Strength Graph" />
-    </RadioGroup>
+            android:text=" - "
+            android:textSize="16sp"
+            android:layout_marginHorizontal="8dp" />
 
-    <!-- Placeholder for Graph -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="To"
+                android:textSize="12sp"
+                android:textColor="#666666" />
+
+            <TextView
+                android:id="@+id/endDateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp"
+                android:textSize="16sp"
+                android:textColor="#0f7670" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Graph Container -->
     <FrameLayout
         android:id="@+id/graphContainer"
         android:layout_width="match_parent"
@@ -97,7 +102,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/graphTypeRadioGroup">
+        app:layout_constraintTop_toBottomOf="@+id/dateRangeLayout">
 
         <TextView
             android:id="@+id/historyTabContentDescription"
