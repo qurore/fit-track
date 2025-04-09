@@ -259,7 +259,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 // Update chart on UI thread
                 runOnUiThread(() -> {
                     BarDataSet dataSet = new BarDataSet(entries, "Workouts");
-                    dataSet.setColor(getResources().getColor(R.color.colorPrimary));
+                    dataSet.setColor(getResources().getColor(R.color.primary));
 
                     BarData barData = new BarData(dataSet);
                     barData.setBarWidth(0.5f);
