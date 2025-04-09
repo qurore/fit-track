@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
@@ -31,10 +32,12 @@ public class HistoryTabContentFragment extends Fragment {
     private CheckBox cardioCheckbox;
     private CheckBox flexibilityCheckbox;
     private CheckBox functionalCheckbox;
+    private RadioGroup metricRadioGroup;
     private SimpleDateFormat dateFormat;
     private Calendar startDate;
     private Calendar endDate;
     private List<String> selectedTypes;
+    private boolean showCount = true; // true for count, false for minutes
 
     public static HistoryTabContentFragment newInstance() {
         return new HistoryTabContentFragment();
@@ -70,6 +73,9 @@ public class HistoryTabContentFragment extends Fragment {
         flexibilityCheckbox = view.findViewById(R.id.flexibilityCheckbox);
         functionalCheckbox = view.findViewById(R.id.functionalCheckbox);
         
+        // Initialize radio group
+        metricRadioGroup = view.findViewById(R.id.metricRadioGroup);
+        
         // Set all checkboxes checked by default
         strengthCheckbox.setChecked(true);
         cardioCheckbox.setChecked(true);
@@ -78,6 +84,9 @@ public class HistoryTabContentFragment extends Fragment {
         
         // Set up checkbox listeners
         setupCheckboxListeners();
+        
+        // Set up radio button listener
+        setupRadioGroupListener();
         
         // Set up date selection listeners
         setupDateSelectors();
@@ -96,13 +105,21 @@ public class HistoryTabContentFragment extends Fragment {
                 selectedTypes.remove(type);
             }
             updateDescription();
-            // TODO: Update graph with selected types
+            updateGraph();
         };
         
         strengthCheckbox.setOnCheckedChangeListener(listener);
         cardioCheckbox.setOnCheckedChangeListener(listener);
         flexibilityCheckbox.setOnCheckedChangeListener(listener);
         functionalCheckbox.setOnCheckedChangeListener(listener);
+    }
+    
+    private void setupRadioGroupListener() {
+        metricRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            showCount = (checkedId == R.id.countRadioButton);
+            updateDescription();
+            updateGraph();
+        });
     }
     
     private void setupDateSelectors() {
@@ -141,7 +158,7 @@ public class HistoryTabContentFragment extends Fragment {
                 
                 updateDateTexts();
                 updateDescription();
-                // TODO: Update graph with new date range
+                updateGraph();
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -168,9 +185,19 @@ public class HistoryTabContentFragment extends Fragment {
         if (selectedTypes.isEmpty()) {
             description = "Select exercise types to view statistics";
         } else {
-            description = String.format("Showing statistics for %s", 
+            String metric = showCount ? "count" : "minutes";
+            description = String.format("Showing %s for %s", 
+                metric,
                 String.join(", ", selectedTypes));
         }
         descriptionTextView.setText(description);
+    }
+    
+    private void updateGraph() {
+        // TODO: Implement graph update based on:
+        // - selectedTypes (List<String>)
+        // - showCount (boolean) - true for count, false for minutes
+        // - startDate (Calendar)
+        // - endDate (Calendar)
     }
 } 

@@ -111,37 +111,91 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <CheckBox
-            android:id="@+id/strengthCheckbox"
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Strength"
-            android:textColor="#0f7670"
-            android:padding="8dp" />
+            android:columnCount="2"
+            android:rowCount="2"
+            android:alignmentMode="alignBounds"
+            android:useDefaultMargins="true">
 
-        <CheckBox
-            android:id="@+id/cardioCheckbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cardio"
-            android:textColor="#0f7670"
-            android:padding="8dp" />
+            <CheckBox
+                android:id="@+id/strengthCheckbox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="Strength"
+                android:textColor="#0f7670"
+                android:padding="8dp" />
 
-        <CheckBox
-            android:id="@+id/flexibilityCheckbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Flexibility"
-            android:textColor="#0f7670"
-            android:padding="8dp" />
+            <CheckBox
+                android:id="@+id/cardioCheckbox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="Cardio"
+                android:textColor="#0f7670"
+                android:padding="8dp" />
 
-        <CheckBox
-            android:id="@+id/functionalCheckbox"
+            <CheckBox
+                android:id="@+id/flexibilityCheckbox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="Flexibility"
+                android:textColor="#0f7670"
+                android:padding="8dp" />
+
+            <CheckBox
+                android:id="@+id/functionalCheckbox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:text="Functional"
+                android:textColor="#0f7670"
+                android:padding="8dp" />
+        </GridLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDDDDD"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Metrics"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/metricRadioGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Functional"
-            android:textColor="#0f7670"
-            android:padding="8dp" />
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/countRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Exercise Count"
+                android:textColor="#0f7670"
+                android:padding="8dp"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/minutesRadioButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Exercise Minutes"
+                android:textColor="#0f7670"
+                android:padding="8dp" />
+        </RadioGroup>
     </LinearLayout>
 
     <!-- Graph Container -->

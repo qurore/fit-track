@@ -52,7 +52,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Data Collection and Usage:\nWe collect only the necessary information to provide you with our services. This includes:\n\n• Account information\n• Workout data\n• Usage statistics" />
+                android:text="Data Collection and Usage:\nWe collect only the necessary information to provide you with our services. This includes:\n\n• Account information\n• Exercise data\n• Usage statistics" />
 
             <TextView
                 android:layout_width="match_parent"
