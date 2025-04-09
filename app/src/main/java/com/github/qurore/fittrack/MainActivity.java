@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -41,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView userProfileTextView;
     private Button loginButton;
     private Button logoutButton;
-    private ImageButton settingsButton;
     private RequestQueue requestQueue;
 
     @Override
@@ -64,17 +62,12 @@ public class MainActivity extends AppCompatActivity {
         userProfileTextView = findViewById(R.id.userProfileTextView);
         loginButton = findViewById(R.id.loginButton);
         logoutButton = findViewById(R.id.logoutButton);
-        settingsButton = findViewById(R.id.settingsButton);
         
         loginButton.setOnClickListener(v -> signIn());
         logoutButton.setOnClickListener(v -> signOut());
-        settingsButton.setOnClickListener(v -> {
-            Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
-        });
         
-        // Initially hide logout and settings buttons
+        // Initially hide logout button
         logoutButton.setVisibility(View.GONE);
-        settingsButton.setVisibility(View.GONE);
         
         // Check if we need to logout (coming from DashboardActivity)
         if (getIntent().getBooleanExtra("LOGOUT", false)) {
@@ -246,12 +239,10 @@ public class MainActivity extends AppCompatActivity {
             userProfileTextView.setText(getString(R.string.welcome_user, user.getDisplayName()));
             loginButton.setVisibility(View.GONE);
             logoutButton.setVisibility(View.VISIBLE);
-            settingsButton.setVisibility(View.VISIBLE);
         } else {
             userProfileTextView.setText("");
             loginButton.setVisibility(View.VISIBLE);
             logoutButton.setVisibility(View.GONE);
-            settingsButton.setVisibility(View.GONE);
         }
     }
     
