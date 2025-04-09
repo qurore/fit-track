@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private TextView userProfileTextView;
+    private TextView loginProgressTextView;
     private Button loginButton;
     private Button logoutButton;
     private RequestQueue requestQueue;
@@ -60,14 +61,16 @@ public class MainActivity extends AppCompatActivity {
         
         // Set up UI elements
         userProfileTextView = findViewById(R.id.userProfileTextView);
+        loginProgressTextView = findViewById(R.id.loginProgressTextView);
         loginButton = findViewById(R.id.loginButton);
         logoutButton = findViewById(R.id.logoutButton);
         
         loginButton.setOnClickListener(v -> signIn());
         logoutButton.setOnClickListener(v -> signOut());
         
-        // Initially hide logout button
+        // Initially hide logout button and progress text
         logoutButton.setVisibility(View.GONE);
+        loginProgressTextView.setVisibility(View.GONE);
         
         // Check if we need to logout (coming from DashboardActivity)
         if (getIntent().getBooleanExtra("LOGOUT", false)) {
@@ -90,6 +93,11 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void signIn() {
+        // Show progress text and disable login button
+        loginProgressTextView.setText("Authenticating, please wait...");
+        loginProgressTextView.setVisibility(View.VISIBLE);
+        loginButton.setEnabled(false);
+        
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -111,6 +119,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Authentication Failed: " + e.getMessage(),
                         Toast.LENGTH_SHORT).show();
                 updateUI(null);
+                
+                // Hide progress text and re-enable login button
+                loginProgressTextView.setVisibility(View.GONE);
+                loginButton.setEnabled(true);
             }
         }
     }
@@ -135,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
                         response -> {
                             // User exists, launch dashboard with user data
                             Log.d(TAG, "User data retrieved successfully");
+                            loginProgressTextView.setVisibility(View.GONE);
                             launchDashboard(user, response);
                         },
                         error -> {
@@ -148,11 +161,15 @@ public class MainActivity extends AppCompatActivity {
                                             setInitialUserData(user, newIdToken);
                                         } else {
                                             Log.e(TAG, "Error getting fresh token for initial data");
+                                            loginProgressTextView.setVisibility(View.GONE);
+                                            loginButton.setEnabled(true);
                                         }
                                     });
                             } else {
                                 // Other error occurred
                                 Log.e(TAG, "Error getting user data: " + error.getMessage());
+                                loginProgressTextView.setVisibility(View.GONE);
+                                loginButton.setEnabled(true);
                             }
                         }
                     ) {
@@ -167,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
                     requestQueue.add(getRequest);
                 } else {
                     Log.e(TAG, "Error getting authentication token");
+                    loginProgressTextView.setVisibility(View.GONE);
+                    loginButton.setEnabled(true);
                 }
             });
     }
@@ -187,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
             // In the future, we will add more fields to the user data
         } catch (Exception e) {
             Log.e(TAG, "Error creating initial user data", e);
+            loginProgressTextView.setVisibility(View.GONE);
+            loginButton.setEnabled(true);
             return;
         }
         
@@ -203,10 +224,14 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e(TAG, "Error parsing user data after creation", e);
                     // Handle error - maybe show a message to the user or retry?
+                    loginProgressTextView.setVisibility(View.GONE);
+                    loginButton.setEnabled(true);
                 }
             },
             error -> {
                 Log.e(TAG, "Error setting initial user data: " + error.getMessage());
+                loginProgressTextView.setVisibility(View.GONE);
+                loginButton.setEnabled(true);
             }
         ) {
             @Override
@@ -239,14 +264,24 @@ public class MainActivity extends AppCompatActivity {
             userProfileTextView.setText(getString(R.string.welcome_user, user.getDisplayName()));
             loginButton.setVisibility(View.GONE);
             logoutButton.setVisibility(View.VISIBLE);
+            
+            // Show loading message when user is authenticated and waiting for dashboard
+            loginProgressTextView.setText("Preparing your dashboard...");
+            loginProgressTextView.setVisibility(View.VISIBLE);
         } else {
             userProfileTextView.setText("");
             loginButton.setVisibility(View.VISIBLE);
+            loginButton.setEnabled(true);
             logoutButton.setVisibility(View.GONE);
+            loginProgressTextView.setVisibility(View.GONE);
         }
     }
     
     private void firebaseAuthWithGoogle(String idToken) {
+        // Show authenticating message during Firebase auth
+        loginProgressTextView.setText("Authenticating, please wait...");
+        loginProgressTextView.setVisibility(View.VISIBLE);
+        
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -268,6 +303,10 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, "Authentication Failed.",
                                     Toast.LENGTH_SHORT).show();
                             updateUI(null);
+                            
+                            // Hide progress text and re-enable login button
+                            loginProgressTextView.setVisibility(View.GONE);
+                            loginButton.setEnabled(true);
                         }
                     }
                 });
