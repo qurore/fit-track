@@ -5,11 +5,15 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import androidx.annotation.NonNull;
@@ -18,23 +22,21 @@ import androidx.fragment.app.Fragment;
 import android.view.ContextThemeWrapper;
 
 public class HistoryTabContentFragment extends Fragment {
-    private static final String ARG_TITLE = "title";
-
-    private String title;
     private TextView titleTextView;
     private TextView descriptionTextView;
     private TextView startDateText;
     private TextView endDateText;
+    private CheckBox strengthCheckbox;
+    private CheckBox cardioCheckbox;
+    private CheckBox flexibilityCheckbox;
+    private CheckBox functionalCheckbox;
     private SimpleDateFormat dateFormat;
     private Calendar startDate;
     private Calendar endDate;
+    private List<String> selectedTypes;
 
-    public static HistoryTabContentFragment newInstance(String title) {
-        HistoryTabContentFragment fragment = new HistoryTabContentFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_TITLE, title);
-        fragment.setArguments(args);
-        return fragment;
+    public static HistoryTabContentFragment newInstance() {
+        return new HistoryTabContentFragment();
     }
 
     @Nullable
@@ -47,8 +49,8 @@ public class HistoryTabContentFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        title = getArguments() != null ? getArguments().getString(ARG_TITLE) : "Tab";
         dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        selectedTypes = new ArrayList<>();
         
         // Initialize calendars
         startDate = Calendar.getInstance();
@@ -61,8 +63,14 @@ public class HistoryTabContentFragment extends Fragment {
         startDateText = view.findViewById(R.id.startDateText);
         endDateText = view.findViewById(R.id.endDateText);
         
-        // Set title
-        titleTextView.setText(title + " History");
+        // Initialize checkboxes
+        strengthCheckbox = view.findViewById(R.id.strengthCheckbox);
+        cardioCheckbox = view.findViewById(R.id.cardioCheckbox);
+        flexibilityCheckbox = view.findViewById(R.id.flexibilityCheckbox);
+        functionalCheckbox = view.findViewById(R.id.functionalCheckbox);
+        
+        // Set up checkbox listeners
+        setupCheckboxListeners();
         
         // Set up date selection listeners
         setupDateSelectors();
@@ -70,6 +78,24 @@ public class HistoryTabContentFragment extends Fragment {
         // Update initial values
         updateDateTexts();
         updateDescription();
+    }
+    
+    private void setupCheckboxListeners() {
+        CompoundButton.OnCheckedChangeListener listener = (buttonView, isChecked) -> {
+            String type = buttonView.getText().toString();
+            if (isChecked) {
+                selectedTypes.add(type);
+            } else {
+                selectedTypes.remove(type);
+            }
+            updateDescription();
+            // TODO: Update graph with selected types
+        };
+        
+        strengthCheckbox.setOnCheckedChangeListener(listener);
+        cardioCheckbox.setOnCheckedChangeListener(listener);
+        flexibilityCheckbox.setOnCheckedChangeListener(listener);
+        functionalCheckbox.setOnCheckedChangeListener(listener);
     }
     
     private void setupDateSelectors() {
@@ -108,6 +134,7 @@ public class HistoryTabContentFragment extends Fragment {
                 
                 updateDateTexts();
                 updateDescription();
+                // TODO: Update graph with new date range
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -130,8 +157,13 @@ public class HistoryTabContentFragment extends Fragment {
     }
     
     private void updateDescription() {
-        String description = String.format("Training history for %s will be displayed here", 
-                title.toLowerCase());
+        String description;
+        if (selectedTypes.isEmpty()) {
+            description = "Select exercise types to view statistics";
+        } else {
+            description = String.format("Showing statistics for %s", 
+                String.join(", ", selectedTypes));
+        }
         descriptionTextView.setText(description);
     }
 } 

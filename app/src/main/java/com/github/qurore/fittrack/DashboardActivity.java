@@ -74,9 +74,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     // Statistics content (renamed from History)
     private View historyContentLayout;
-    private TabLayout historyTabLayout;
-    private ViewPager2 historyViewPager;
-    private HistoryTabPagerAdapter historyTabPagerAdapter;
+    private HistoryTabContentFragment historyFragment;
     
     // Settings content
     private View settingsContentLayout;
@@ -118,8 +116,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Initialize Statistics content views (renamed from History)
         historyContentLayout = findViewById(R.id.historyContentLayout);
-        historyTabLayout = historyContentLayout.findViewById(R.id.historyTabLayout);
-        historyViewPager = historyContentLayout.findViewById(R.id.historyViewPager);
         
         // Initialize Settings content view
         settingsContentLayout = findViewById(R.id.settingsContentLayout);
@@ -165,7 +161,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Set up tabs for workout page
         setupTabs();
-        setupHistoryTabs();
         
         // Set up bottom navigation
         setupBottomNavigation();
@@ -412,17 +407,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         }).attach();
     }
     
-    private void setupHistoryTabs() {
-        // Initialize the ViewPager adapter for History
-        historyTabPagerAdapter = new HistoryTabPagerAdapter(this);
-        historyViewPager.setAdapter(historyTabPagerAdapter);
-        
-        // Connect TabLayout with ViewPager2
-        new TabLayoutMediator(historyTabLayout, historyViewPager, (tab, position) -> {
-            tab.setText(historyTabPagerAdapter.getTabTitle(position));
-        }).attach();
-    }
-    
     private void setupBottomNavigation() {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -486,6 +470,15 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         workoutHistoryContentLayout.setVisibility(View.GONE);
         historyContentLayout.setVisibility(View.VISIBLE);
         settingsContentLayout.setVisibility(View.GONE);
+        
+        // Initialize HistoryTabContentFragment if not already done
+        if (historyFragment == null) {
+            historyFragment = HistoryTabContentFragment.newInstance();
+            getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.historyFragmentContainer, historyFragment)
+                .commit();
+        }
     }
     
     private void showSettingsContent() {
