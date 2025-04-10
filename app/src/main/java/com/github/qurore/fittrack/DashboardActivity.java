@@ -21,10 +21,12 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -255,6 +257,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 runOnUiThread(() -> {
                     BarDataSet dataSet = new BarDataSet(entries, "Workouts");
                     dataSet.setColor(getResources().getColor(R.color.primary));
+                    dataSet.setValueFormatter(new IntegerValueFormatter());
 
                     BarData barData = new BarData(dataSet);
                     barData.setBarWidth(0.5f);
@@ -274,7 +277,11 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                     xAxis.setGranularity(1f);
 
                     // Customize Y axis
-                    activityChart.getAxisLeft().setDrawGridLines(false);
+                    YAxis leftAxis = activityChart.getAxisLeft();
+                    leftAxis.setDrawGridLines(false);
+                    leftAxis.setGranularity(1f);
+                    leftAxis.setAxisMinimum(0f);
+                    leftAxis.setValueFormatter(new IntegerValueFormatter());
                     activityChart.getAxisRight().setEnabled(false);
 
                     activityChart.invalidate();
@@ -594,5 +601,17 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     public void onNameUpdated(String newName) {
         Log.d("DashboardActivity", "onNameUpdated called with new name: " + newName);
         headerUsernameTextView.setText(newName);
+    }
+
+    // Custom ValueFormatter to display integers
+    private static class IntegerValueFormatter extends ValueFormatter {
+        @Override
+        public String getFormattedValue(float value) {
+            // Display integer values, hide zero values for cleaner look
+            if (value == 0) {
+                return "";
+            }
+            return String.valueOf((int) value);
+        }
     }
 } 
