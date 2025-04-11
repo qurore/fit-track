@@ -1,225 +1,232 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/historyTabContentTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Exercise Statistics"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Date Range Selection Layout -->
-    <LinearLayout
-        android:id="@+id/dateRangeLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        android:padding="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/historyTabContentTitle">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="From"
-                android:textSize="12sp"
-                android:textColor="#666666" />
-
-            <TextView
-                android:id="@+id/startDateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?android:attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="8dp"
-                android:textSize="16sp"
-                android:textColor="#0f7670" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=" - "
-            android:textSize="16sp"
-            android:layout_marginHorizontal="8dp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="To"
-                android:textSize="12sp"
-                android:textColor="#666666" />
-
-            <TextView
-                android:id="@+id/endDateText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?android:attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="8dp"
-                android:textSize="16sp"
-                android:textColor="#0f7670" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Exercise Type Selection -->
-    <LinearLayout
-        android:id="@+id/exerciseTypeLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        android:padding="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/dateRangeLayout">
+        android:layout_height="match_parent">
 
         <TextView
+            android:id="@+id/historyTabContentTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Exercise Types"
-            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:text="Exercise Statistics"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:columnCount="2"
-            android:rowCount="2"
-            android:alignmentMode="alignBounds"
-            android:useDefaultMargins="true">
-
-            <CheckBox
-                android:id="@+id/strengthCheckbox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:text="Strength"
-                android:textColor="#0f7670"
-                android:padding="8dp" />
-
-            <CheckBox
-                android:id="@+id/cardioCheckbox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:text="Cardio"
-                android:textColor="#0f7670"
-                android:padding="8dp" />
-
-            <CheckBox
-                android:id="@+id/flexibilityCheckbox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:text="Flexibility"
-                android:textColor="#0f7670"
-                android:padding="8dp" />
-
-            <CheckBox
-                android:id="@+id/functionalCheckbox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:text="Functional"
-                android:textColor="#0f7670"
-                android:padding="8dp" />
-        </GridLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp" />
-
-        <TextView
+        <!-- Date Range Selection Layout -->
+        <LinearLayout
+            android:id="@+id/dateRangeLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Metrics"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <RadioGroup
-            android:id="@+id/metricRadioGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/countRadioButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Exercise Count"
-                android:textColor="#0f7670"
-                android:padding="8dp"
-                android:checked="true" />
-
-            <RadioButton
-                android:id="@+id/minutesRadioButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Exercise Minutes"
-                android:textColor="#0f7670"
-                android:padding="8dp" />
-        </RadioGroup>
-    </LinearLayout>
-
-    <!-- Graph Container -->
-    <FrameLayout
-        android:id="@+id/graphContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="#F5F5F5"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/exerciseTypeLayout">
-
-        <TextView
-            android:id="@+id/historyTabContentDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:textSize="16sp" />
-    </FrameLayout>
+            android:background="@android:color/white"
+            android:elevation="2dp"
+            android:padding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/historyTabContentTitle">
 
-</androidx.constraintlayout.widget.ConstraintLayout> 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="From"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/startDateText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:textSize="16sp"
+                    android:textColor="#0f7670" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" - "
+                android:textSize="16sp"
+                android:layout_marginHorizontal="8dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="To"
+                    android:textSize="12sp"
+                    android:textColor="#666666" />
+
+                <TextView
+                    android:id="@+id/endDateText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:textSize="16sp"
+                    android:textColor="#0f7670" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Exercise Type Selection -->
+        <LinearLayout
+            android:id="@+id/exerciseTypeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical"
+            android:background="@android:color/white"
+            android:elevation="2dp"
+            android:padding="12dp"
+            app:layout_constraintTop_toBottomOf="@+id/dateRangeLayout">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Exercise Types"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2"
+                android:rowCount="2"
+                android:alignmentMode="alignBounds"
+                android:useDefaultMargins="true">
+
+                <CheckBox
+                    android:id="@+id/strengthCheckbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:text="Strength"
+                    android:textColor="#0f7670"
+                    android:padding="8dp" />
+
+                <CheckBox
+                    android:id="@+id/cardioCheckbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:text="Cardio"
+                    android:textColor="#0f7670"
+                    android:padding="8dp" />
+
+                <CheckBox
+                    android:id="@+id/flexibilityCheckbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:text="Flexibility"
+                    android:textColor="#0f7670"
+                    android:padding="8dp" />
+
+                <CheckBox
+                    android:id="@+id/functionalCheckbox"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:text="Functional"
+                    android:textColor="#0f7670"
+                    android:padding="8dp" />
+            </GridLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#DDDDDD"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Metrics"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <RadioGroup
+                android:id="@+id/metricRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/countRadioButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Exercise Count"
+                    android:textColor="#0f7670"
+                    android:padding="8dp"
+                    android:checked="true" />
+
+                <RadioButton
+                    android:id="@+id/minutesRadioButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Exercise Minutes"
+                    android:textColor="#0f7670"
+                    android:padding="8dp" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Graph Container -->
+        <FrameLayout
+            android:id="@+id/graphContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="#F5F5F5"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/exerciseTypeLayout">
+
+            <TextView
+                android:id="@+id/historyTabContentDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textSize="16sp" />
+        </FrameLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout> 

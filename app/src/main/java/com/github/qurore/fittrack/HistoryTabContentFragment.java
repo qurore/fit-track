@@ -43,6 +43,7 @@ import com.github.qurore.fittrack.repository.ExerciseRepository;
 import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class HistoryTabContentFragment extends Fragment {
     private TextView titleTextView;
@@ -65,6 +66,7 @@ public class HistoryTabContentFragment extends Fragment {
     private boolean showCount = true; // true for count, false for minutes
     private ExerciseRepository exerciseRepository;
     private ExerciseService exerciseService;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     public static HistoryTabContentFragment newInstance() {
         return new HistoryTabContentFragment();
@@ -97,6 +99,7 @@ public class HistoryTabContentFragment extends Fragment {
         startDateText = view.findViewById(R.id.startDateText);
         endDateText = view.findViewById(R.id.endDateText);
         graphContainer = view.findViewById(R.id.graphContainer);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         
         // Initialize checkboxes
         strengthCheckbox = view.findViewById(R.id.strengthCheckbox);
@@ -134,8 +137,16 @@ public class HistoryTabContentFragment extends Fragment {
         
         // Load data and update graph
         updateGraph();
+        
+        // Setup SwipeRefreshLayout
+        setupSwipeRefreshLayout();
     }
     
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
     private void setupChart() {
         // Create and add the chart to the container
         barChart = new BarChart(requireContext());
@@ -275,10 +286,18 @@ public class HistoryTabContentFragment extends Fragment {
             return;
         }
         
+        // Use the common refresh method
+        refreshStatisticsData();
+    }
+    
+    private void refreshStatisticsData() {
+        // Show loading indicator in description
+        descriptionTextView.setText("Loading data...");
+        
         // Trigger a refresh to get the latest data
         exerciseRepository.refreshExercises();
         
-        // The actual data processing is now handled by the observer
+        // The actual data processing is handled by the observer
     }
     
     // Helper to capitalize the first letter of a string
@@ -454,6 +473,20 @@ public class HistoryTabContentFragment extends Fragment {
                 
                 // Update description
                 updateDescription();
+            });
+        }
+    }
+
+    private void setupSwipeRefreshLayout() {
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.primary));
+            swipeRefreshLayout.setOnRefreshListener(this::refreshStatisticsData);
+            
+            // Observe loading state from repository
+            exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+                if (swipeRefreshLayout != null && isLoading != null) {
+                    swipeRefreshLayout.setRefreshing(isLoading);
+                }
             });
         }
     }

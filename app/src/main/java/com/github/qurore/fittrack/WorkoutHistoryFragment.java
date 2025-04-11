@@ -92,6 +92,11 @@ public class WorkoutHistoryFragment extends Fragment {
         loadExercises();
     }
     
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+    
     private void setupObservers() {
         // Observe exercise data changes
         exerciseRepository.getExercises().observe(getViewLifecycleOwner(), exercises -> {

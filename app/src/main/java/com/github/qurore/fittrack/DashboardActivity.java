@@ -199,19 +199,16 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Only inflate the menu when home screen is visible
-        if (findViewById(R.id.homeScrollView).getVisibility() == View.VISIBLE) {
-            getMenuInflater().inflate(R.menu.home_menu, menu);
-            return true;
-        }
-        return super.onCreateOptionsMenu(menu);
+        // Show refresh button on all screens
+        getMenuInflater().inflate(R.menu.home_menu, menu);
+        return true;
     }
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
-            // Refresh dashboard data manually
-            refreshDashboardData();
+            // Refresh data based on current screen
+            refreshCurrentScreenData();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -270,6 +267,23 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // The UI will be updated automatically through LiveData observers
         // No need to call setupActivityChart() or setupRecentWorkouts() explicitly
+    }
+    
+    /**
+     * Refreshes data for the currently visible screen
+     */
+    private void refreshCurrentScreenData() {
+        // Determine which screen is visible and refresh accordingly
+        if (findViewById(R.id.homeScrollView).getVisibility() == View.VISIBLE) {
+            // Refresh dashboard data
+            refreshDashboardData();
+        } else if (findViewById(R.id.workoutHistoryScrollView).getVisibility() == View.VISIBLE) {
+            // Refresh workout history
+            exerciseRepository.refreshExercises();
+        } else if (findViewById(R.id.historyScrollView).getVisibility() == View.VISIBLE) {
+            // Refresh statistics
+            exerciseRepository.refreshExercises();
+        }
     }
     
     private void setupActivityChart() {
