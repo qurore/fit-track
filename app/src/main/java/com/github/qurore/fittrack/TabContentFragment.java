@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
@@ -65,6 +66,12 @@ public class TabContentFragment extends Fragment {
         subtitleTextView.setText("Choose a category, then select an exercise");
         
         exerciseListView = view.findViewById(R.id.exerciseListView);
+        
+        // Disable scrolling in ExpandableListView to prevent conflicts with parent NestedScrollView
+        exerciseListView.setNestedScrollingEnabled(false);
+        
+        // Use a utility method to set a fixed height for the ExpandableListView
+        setListViewHeightBasedOnChildren(exerciseListView);
         
         initializeDataFromJson(title);
         setupListView();
@@ -151,9 +158,74 @@ public class TabContentFragment extends Fragment {
         }
     }
     
+    // Helper method to properly size the ExpandableListView
+    private void setListViewHeightBasedOnChildren(ExpandableListView listView) {
+        // This will be called after the adapter is set in setupListView()
+        listView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+            @Override
+            public void onGroupExpand(int groupPosition) {
+                // After expansion, recalculate the ListView height
+                android.os.Handler handler = new android.os.Handler();
+                handler.postDelayed(() -> calculateListViewHeight(listView), 100);
+                
+                // Close other expanded groups
+                for (int i = 0; i < categories.size(); i++) {
+                    if (i != groupPosition && listView.isGroupExpanded(i)) {
+                        listView.collapseGroup(i);
+                    }
+                }
+            }
+        });
+        
+        listView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+            @Override
+            public void onGroupCollapse(int groupPosition) {
+                // After collapse, recalculate the ListView height
+                android.os.Handler handler = new android.os.Handler();
+                handler.postDelayed(() -> calculateListViewHeight(listView), 100);
+            }
+        });
+    }
+
+    private void calculateListViewHeight(ExpandableListView listView) {
+        if (listView.getAdapter() == null) return;
+        
+        ExpandableListAdapter listAdapter = listView.getExpandableListAdapter();
+        int totalHeight = 0;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
+        
+        // Calculate height for each group
+        for (int i = 0; i < listAdapter.getGroupCount(); i++) {
+            View groupItem = listAdapter.getGroupView(i, listView.isGroupExpanded(i), null, listView);
+            groupItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += groupItem.getMeasuredHeight();
+            
+            // Add height for expanded children
+            if (listView.isGroupExpanded(i)) {
+                for (int j = 0; j < listAdapter.getChildrenCount(i); j++) {
+                    View childItem = listAdapter.getChildView(i, j, false, null, listView);
+                    childItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+                    totalHeight += childItem.getMeasuredHeight();
+                }
+            }
+        }
+        
+        // Add padding
+        totalHeight += (listView.getDividerHeight() * (listAdapter.getGroupCount() - 1));
+        
+        // Set the calculated height
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight;
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+    }
+
     private void setupListView() {
         adapter = new ExerciseListAdapter(requireContext(), categories, exercises);
         exerciseListView.setAdapter(adapter);
+
+        // Calculate initial height after setting adapter
+        calculateListViewHeight(exerciseListView);
 
         // Handle exercise selection
         exerciseListView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
@@ -167,16 +239,6 @@ public class TabContentFragment extends Fragment {
             intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_SUBTYPE, category);
             startActivity(intent);
             return true;
-        });
-
-        // Handle category expansion
-        exerciseListView.setOnGroupExpandListener(groupPosition -> {
-            // Close other expanded groups
-            for (int i = 0; i < categories.size(); i++) {
-                if (i != groupPosition && exerciseListView.isGroupExpanded(i)) {
-                    exerciseListView.collapseGroup(i);
-                }
-            }
         });
     }
 } 
