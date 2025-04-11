@@ -95,6 +95,9 @@ public class SettingsFragment extends Fragment {
         aboutOption = view.findViewById(R.id.aboutOption);
         termsOption = view.findViewById(R.id.termsOption);
         
+        // Make content visible
+        view.setVisibility(View.VISIBLE);
+        
         // Set up click listeners
         setupClickListeners();
     }
