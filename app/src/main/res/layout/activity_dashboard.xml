@@ -52,111 +52,146 @@
         </LinearLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Home content -->
-    <include
-        android:id="@+id/homeContentLayout"
-        layout="@layout/layout_home_content"
+    <!-- Home content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/homeScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-
-    <!-- Workout content with tabs -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/workoutContentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
+        android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
-
-        <!-- Tab Layout -->
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
+        
+        <include
+            android:id="@+id/homeContentLayout"
+            layout="@layout/layout_home_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/primary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tabGravity="fill"
-            app:tabMode="fixed"
-            app:tabSelectedTextColor="@android:color/white"
-            app:tabTextColor="#CCCCCC"
-            app:tabIndicatorColor="@android:color/white"
-            app:tabIndicatorHeight="3dp">
+            android:visibility="gone" />
+    </androidx.core.widget.NestedScrollView>
 
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Strength" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cardio" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Flexibility" />
-
-            <com.google.android.material.tabs.TabItem
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Functional" />
-        </com.google.android.material.tabs.TabLayout>
-
-        <!-- ViewPager for tab content -->
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager"
+    <!-- Workout content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/workoutScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/workoutContentLayout"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
-    <!-- History content -->
-    <FrameLayout
-        android:id="@+id/workoutHistoryContentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+            <!-- Tab Layout -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/primary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tabGravity="fill"
+                app:tabMode="fixed"
+                app:tabSelectedTextColor="@android:color/white"
+                app:tabTextColor="#CCCCCC"
+                app:tabIndicatorColor="@android:color/white"
+                app:tabIndicatorHeight="3dp">
 
-    <!-- Statistics content (renamed from History) -->
-    <include
-        android:id="@+id/historyContentLayout"
-        layout="@layout/layout_history_content"
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Strength" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cardio" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Flexibility" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Functional" />
+            </com.google.android.material.tabs.TabLayout>
+
+            <!-- ViewPager for tab content -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tabLayout" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Workout History content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/workoutHistoryScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
+        android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-    
-    <!-- Settings content -->
-    <FrameLayout
-        android:id="@+id/settingsContentLayout"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        
+        <FrameLayout
+            android:id="@+id/workoutHistoryContentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Statistics content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/historyScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
+        android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
-    
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        
+        <include
+            android:id="@+id/historyContentLayout"
+            layout="@layout/layout_history_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Settings content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/settingsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        
+        <FrameLayout
+            android:id="@+id/settingsContentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+    </androidx.core.widget.NestedScrollView>
+
     <!-- Footer navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

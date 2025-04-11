@@ -315,7 +315,10 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     
     private void setupRecentWorkouts() {
         // Set up RecyclerView
-        recentWorkoutsList.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recentWorkoutsList.setLayoutManager(layoutManager);
+        // Disable nested scrolling to avoid conflicts with NestedScrollView
+        recentWorkoutsList.setNestedScrollingEnabled(false);
         
         // Set up View All button click listener
         View viewAllWorkouts = homeContentLayout.findViewById(R.id.viewAllWorkouts);
@@ -440,27 +443,39 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     }
     
     private void showHomeContent() {
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.VISIBLE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
+        findViewById(R.id.historyScrollView).setVisibility(View.GONE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        
+        // Set visibility of actual content
         homeContentLayout.setVisibility(View.VISIBLE);
-        workoutContentLayout.setVisibility(View.GONE);
-        workoutHistoryContentLayout.setVisibility(View.GONE);
-        historyContentLayout.setVisibility(View.GONE);
-        settingsContentLayout.setVisibility(View.GONE);
     }
     
     public void showWorkoutContent() {
-        homeContentLayout.setVisibility(View.GONE);
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.VISIBLE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
+        findViewById(R.id.historyScrollView).setVisibility(View.GONE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        
+        // Set visibility of actual content
         workoutContentLayout.setVisibility(View.VISIBLE);
-        workoutHistoryContentLayout.setVisibility(View.GONE);
-        historyContentLayout.setVisibility(View.GONE);
-        settingsContentLayout.setVisibility(View.GONE);
     }
     
     private void showWorkoutHistoryContent() {
-        homeContentLayout.setVisibility(View.GONE);
-        workoutContentLayout.setVisibility(View.GONE);
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.VISIBLE);
+        findViewById(R.id.historyScrollView).setVisibility(View.GONE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        
+        // Set visibility of actual content
         workoutHistoryContentLayout.setVisibility(View.VISIBLE);
-        historyContentLayout.setVisibility(View.GONE);
-        settingsContentLayout.setVisibility(View.GONE);
         
         // Initialize WorkoutHistoryFragment if not already done
         if (getSupportFragmentManager().findFragmentById(R.id.workoutHistoryContentLayout) == null) {
@@ -472,11 +487,15 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     }
     
     private void showStatisticsContent() {
-        homeContentLayout.setVisibility(View.GONE);
-        workoutContentLayout.setVisibility(View.GONE);
-        workoutHistoryContentLayout.setVisibility(View.GONE);
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
+        findViewById(R.id.historyScrollView).setVisibility(View.VISIBLE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        
+        // Set visibility of actual content
         historyContentLayout.setVisibility(View.VISIBLE);
-        settingsContentLayout.setVisibility(View.GONE);
         
         // Initialize HistoryTabContentFragment if not already done
         if (historyFragment == null) {
@@ -489,10 +508,14 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     }
     
     private void showSettingsContent() {
-        homeContentLayout.setVisibility(View.GONE);
-        workoutContentLayout.setVisibility(View.GONE);
-        workoutHistoryContentLayout.setVisibility(View.GONE);
-        historyContentLayout.setVisibility(View.GONE);
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
+        findViewById(R.id.historyScrollView).setVisibility(View.GONE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.VISIBLE);
+        
+        // Set visibility of actual content
         settingsContentLayout.setVisibility(View.VISIBLE);
         
         // Initialize SettingsFragment if not already done
