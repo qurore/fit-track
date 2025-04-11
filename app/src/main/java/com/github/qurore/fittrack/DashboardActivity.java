@@ -237,10 +237,16 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         // Observe error messages from repository
         exerciseRepository.getErrorMessage().observe(this, errorMessage -> {
             if (errorMessage != null && !errorMessage.isEmpty()) {
-                // Show error message with retry option
-                Toast.makeText(this, 
-                    "Error: " + errorMessage + ". Pull down to retry.", 
-                    Toast.LENGTH_LONG).show();
+                // Show actionable error message instructing the user what to do
+                String actionableMessage;
+                
+                if (errorMessage.contains("AuthFailure") || errorMessage.contains("403")) {
+                    actionableMessage = "Authentication error occurred. Please tap the refresh button or pull down to reload.";
+                } else {
+                    actionableMessage = "Error loading data. Please tap the refresh button to try again.";
+                }
+                
+                Toast.makeText(this, actionableMessage, Toast.LENGTH_LONG).show();
                 
                 // Stop the refresh animation
                 if (swipeRefreshLayout != null) {
