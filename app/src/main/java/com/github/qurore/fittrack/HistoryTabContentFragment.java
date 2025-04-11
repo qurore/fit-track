@@ -28,6 +28,7 @@ import java.util.TreeMap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import android.view.ContextThemeWrapper;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -38,6 +39,7 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.github.qurore.fittrack.repository.ExerciseRepository;
 import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
@@ -61,6 +63,7 @@ public class HistoryTabContentFragment extends Fragment {
     private Calendar endDate;
     private List<String> selectedTypes;
     private boolean showCount = true; // true for count, false for minutes
+    private ExerciseRepository exerciseRepository;
     private ExerciseService exerciseService;
 
     public static HistoryTabContentFragment newInstance() {
@@ -80,6 +83,7 @@ public class HistoryTabContentFragment extends Fragment {
         dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         displayDateFormat = new SimpleDateFormat("MMM dd", Locale.getDefault());
         selectedTypes = new ArrayList<>(Arrays.asList("Strength", "Cardio", "Flexibility", "Functional"));
+        exerciseRepository = ExerciseRepository.getInstance(requireContext());
         exerciseService = new ExerciseService(requireContext());
         
         // Initialize calendars
@@ -124,6 +128,9 @@ public class HistoryTabContentFragment extends Fragment {
         // Update initial values
         updateDateTexts();
         updateDescription();
+        
+        // Set up observers
+        setupObservers();
         
         // Load data and update graph
         updateGraph();
@@ -268,6 +275,69 @@ public class HistoryTabContentFragment extends Fragment {
             return;
         }
         
+        // Trigger a refresh to get the latest data
+        exerciseRepository.refreshExercises();
+        
+        // The actual data processing is now handled by the observer
+    }
+    
+    // Helper to capitalize the first letter of a string
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
+    }
+
+    // Helper to truncate timestamp to day (for grouping)
+    private long getDayKey(long timestamp) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(timestamp);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTimeInMillis();
+    }
+
+    // Custom ValueFormatter to display integers
+    private static class IntegerValueFormatter extends ValueFormatter {
+        @Override
+        public String getFormattedValue(float value) {
+            // Display integer values, hide zero values for cleaner look
+            if (value == 0) {
+                return "";
+            }
+            return String.valueOf((int) value);
+        }
+    }
+
+    private void setupObservers() {
+        // Observe exercise data
+        exerciseRepository.getExercises().observe(getViewLifecycleOwner(), exercises -> {
+            // Process data when it changes
+            processExerciseData(exercises);
+        });
+        
+        // Observe loading state
+        exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isAdded() && isLoading) {
+                descriptionTextView.setText("Loading data...");
+            } else if (isAdded()) {
+                updateDescription();
+            }
+        });
+        
+        // Observe error messages
+        exerciseRepository.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (isAdded() && errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                updateDescription();
+            }
+        });
+    }
+
+    private void processExerciseData(List<JSONObject> exercises) {
         // Get calendar instances for the start and end dates
         Calendar startCal = (Calendar) startDate.clone();
         Calendar endCal = (Calendar) endDate.clone();
@@ -284,34 +354,10 @@ public class HistoryTabContentFragment extends Fragment {
         endCal.set(Calendar.SECOND, 59);
         endCal.set(Calendar.MILLISECOND, 999);
         
+        // Calculate time range
         long startTime = startCal.getTimeInMillis();
         long endTime = endCal.getTimeInMillis();
         
-        // Show loading indicator or message
-        descriptionTextView.setText("Loading data...");
-        
-        // Fetch exercise data
-        exerciseService.getAllExercises(new ExerciseService.ExerciseCallback() {
-            @Override
-            public void onSuccess(List<JSONObject> exercises) {
-                processExerciseData(exercises, startTime, endTime);
-            }
-            
-            @Override
-            public void onError(String error) {
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(), 
-                            "Error loading exercise data: " + error, 
-                            Toast.LENGTH_SHORT).show();
-                        updateDescription(); // Revert to original description
-                    });
-                }
-            }
-        });
-    }
-    
-    private void processExerciseData(List<JSONObject> exercises, long startTime, long endTime) {
         // Map to store the data (day -> value)
         TreeMap<Long, Integer> dayData = new TreeMap<>();
         
@@ -409,37 +455,6 @@ public class HistoryTabContentFragment extends Fragment {
                 // Update description
                 updateDescription();
             });
-        }
-    }
-    
-    // Helper to capitalize the first letter of a string
-    private String capitalizeFirstLetter(String text) {
-        if (text == null || text.isEmpty()) {
-            return text;
-        }
-        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
-    }
-
-    // Helper to truncate timestamp to day (for grouping)
-    private long getDayKey(long timestamp) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(timestamp);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTimeInMillis();
-    }
-
-    // Custom ValueFormatter to display integers
-    private static class IntegerValueFormatter extends ValueFormatter {
-        @Override
-        public String getFormattedValue(float value) {
-            // Display integer values, hide zero values for cleaner look
-            if (value == 0) {
-                return "";
-            }
-            return String.valueOf((int) value);
         }
     }
 } 

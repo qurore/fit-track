@@ -44,6 +44,11 @@ public class ExerciseService {
         void onError(String error);
     }
     
+    public interface SaveCallback {
+        void onSuccess();
+        void onError(String error);
+    }
+    
     public ExerciseService(Context context) {
         requestQueue = Volley.newRequestQueue(context);
         mAuth = FirebaseAuth.getInstance();
@@ -204,5 +209,79 @@ public class ExerciseService {
                     callback.onError("Failed to get authentication token");
                 }
             });
+    }
+    
+    public void saveExercise(JSONObject exerciseData, String idToken, SaveCallback callback) {
+        JsonObjectRequest request = new JsonObjectRequest(
+            Request.Method.POST,
+            API_URL,
+            exerciseData,
+            response -> {
+                Log.d(TAG, "Exercise saved successfully");
+                callback.onSuccess();
+            },
+            error -> {
+                String errorMessage = "Failed to save exercise";
+                if (error.networkResponse != null) {
+                    errorMessage += " (Status: " + error.networkResponse.statusCode + ")";
+                }
+                Log.e(TAG, errorMessage + ": " + error.toString());
+                callback.onError(errorMessage);
+            }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + idToken);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        requestQueue.add(request);
+    }
+    
+    public void updateExercise(String exerciseId, JSONObject exerciseData, String idToken, SaveCallback callback) {
+        try {
+            // Extract the ID from the MongoDB ObjectId format if necessary
+            String id = exerciseId;
+            if (exerciseId.contains("$oid")) {
+                // Parse the MongoDB ObjectId format
+                JSONObject jsonId = new JSONObject(exerciseId);
+                id = jsonId.getString("$oid");
+            }
+            
+            String url = API_URL + "/" + id;
+            
+            JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.PUT,
+                url,
+                exerciseData,
+                response -> {
+                    Log.d(TAG, "Exercise updated successfully");
+                    callback.onSuccess();
+                },
+                error -> {
+                    String errorMessage = "Failed to update exercise";
+                    if (error.networkResponse != null) {
+                        errorMessage += " (Status: " + error.networkResponse.statusCode + ")";
+                    }
+                    Log.e(TAG, errorMessage + ": " + error.toString());
+                    callback.onError(errorMessage);
+                }
+            ) {
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("Authorization", "Bearer " + idToken);
+                    headers.put("Content-Type", "application/json");
+                    return headers;
+                }
+            };
+            
+            requestQueue.add(request);
+        } catch (Exception e) {
+            callback.onError("Error processing exercise ID: " + e.getMessage());
+        }
     }
 } 

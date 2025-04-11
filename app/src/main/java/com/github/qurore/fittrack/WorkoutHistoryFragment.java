@@ -13,10 +13,12 @@ import android.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.github.qurore.fittrack.repository.ExerciseRepository;
 import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
@@ -37,7 +39,7 @@ public class WorkoutHistoryFragment extends Fragment {
     
     private RecyclerView workoutHistoryList;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private ExerciseService exerciseService;
+    private ExerciseRepository exerciseRepository;
     private WorkoutHistoryAdapter adapter;
     private TextView noExercisesText;
     private TextView addExerciseLink;
@@ -56,7 +58,7 @@ public class WorkoutHistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
-        exerciseService = new ExerciseService(requireContext());
+        exerciseRepository = ExerciseRepository.getInstance(requireContext());
         
         // Initialize views
         workoutHistoryList = view.findViewById(R.id.workoutHistoryList);
@@ -83,44 +85,55 @@ public class WorkoutHistoryFragment extends Fragment {
             }
         });
         
+        // Set up observers
+        setupObservers();
+        
         // Load exercises
         loadExercises();
     }
     
-    private void loadExercises() {
-        swipeRefreshLayout.setRefreshing(true);
-        
-        exerciseService.getAllExercises(new ExerciseService.ExerciseCallback() {
-            @Override
-            public void onSuccess(List<JSONObject> exercises) {
-                if (isAdded()) {  // Check if fragment is still attached to activity
-                    swipeRefreshLayout.setRefreshing(false);
-                    List<HistoryListItem> historyItems = convertToHistoryItems(exercises);
-                    adapter.updateData(historyItems);
-                    
-                    // Update visibility based on data
-                    if (historyItems.isEmpty()) {
-                        noExercisesText.setVisibility(View.VISIBLE);
-                        workoutHistoryList.setVisibility(View.GONE);
-                    } else {
-                        noExercisesText.setVisibility(View.GONE);
-                        workoutHistoryList.setVisibility(View.VISIBLE);
-                    }
+    private void setupObservers() {
+        // Observe exercise data changes
+        exerciseRepository.getExercises().observe(getViewLifecycleOwner(), exercises -> {
+            if (isAdded()) {  // Check if fragment is still attached to activity
+                List<HistoryListItem> historyItems = convertToHistoryItems(exercises);
+                adapter.updateData(historyItems);
+                
+                // Update visibility based on data
+                if (historyItems.isEmpty()) {
+                    noExercisesText.setVisibility(View.VISIBLE);
+                    workoutHistoryList.setVisibility(View.GONE);
+                } else {
+                    noExercisesText.setVisibility(View.GONE);
+                    workoutHistoryList.setVisibility(View.VISIBLE);
                 }
             }
-
-            @Override
-            public void onError(String error) {
-                if (isAdded()) {  // Check if fragment is still attached to activity
-                    swipeRefreshLayout.setRefreshing(false);
-                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                    
-                    // Show no exercises text on error
+        });
+        
+        // Observe loading state
+        exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isAdded()) {
+                swipeRefreshLayout.setRefreshing(isLoading);
+            }
+        });
+        
+        // Observe error messages
+        exerciseRepository.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (isAdded() && errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                
+                // Show no exercises text on error if no data available
+                if (adapter.getItemCount() == 0) {
                     noExercisesText.setVisibility(View.VISIBLE);
                     workoutHistoryList.setVisibility(View.GONE);
                 }
             }
         });
+    }
+    
+    private void loadExercises() {
+        // Just trigger a refresh - actual data loading is handled by the repository
+        exerciseRepository.refreshExercises();
     }
     
     private List<HistoryListItem> convertToHistoryItems(List<JSONObject> exercises) {
@@ -313,14 +326,11 @@ public class WorkoutHistoryFragment extends Fragment {
                         .setTitle("Delete Exercise")
                         .setMessage("Are you sure you want to delete this exercise?")
                         .setPositiveButton("Delete", (dialog, which) -> {
-                            exerciseService.deleteExercise(workout.id, new ExerciseService.DeleteCallback() {
+                            exerciseRepository.deleteExercise(workout.id, new ExerciseService.DeleteCallback() {
                                 @Override
                                 public void onSuccess() {
-                                    removeItem(holder.getAdapterPosition());
-                                    if (items.isEmpty()) {
-                                        noExercisesText.setVisibility(View.VISIBLE);
-                                        workoutHistoryList.setVisibility(View.GONE);
-                                    }
+                                    // No need to manually update the UI
+                                    // The repository will refresh data and the observer will update the UI
                                 }
 
                                 @Override

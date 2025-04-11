@@ -19,10 +19,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.github.qurore.fittrack.repository.ExerciseRepository;
+import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
@@ -61,7 +59,7 @@ public class RecordExerciseActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormat;
     private SimpleDateFormat timeFormat;
 
-    private RequestQueue requestQueue;
+    private ExerciseRepository exerciseRepository;
     private FirebaseAuth mAuth;
     
     private boolean isEditMode = false;
@@ -73,9 +71,9 @@ public class RecordExerciseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record_exercise);
 
-        // Initialize Firebase Auth and Volley RequestQueue
+        // Initialize Firebase Auth and ExerciseRepository
         mAuth = FirebaseAuth.getInstance();
-        requestQueue = Volley.newRequestQueue(this);
+        exerciseRepository = ExerciseRepository.getInstance(this);
 
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -343,7 +341,18 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         String idToken = task.getResult().getToken();
-                        sendUpdatedExerciseData(exerciseData, idToken);
+                        exerciseRepository.updateExercise(exerciseId, exerciseData, idToken, new ExerciseService.SaveCallback() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(RecordExerciseActivity.this, "Exercise updated successfully", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                            
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(RecordExerciseActivity.this, error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } else {
                         Toast.makeText(this, "Authentication error", Toast.LENGTH_SHORT).show();
                     }
@@ -421,7 +430,18 @@ public class RecordExerciseActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         String idToken = task.getResult().getToken();
-                        sendExerciseData(exerciseData, idToken);
+                        exerciseRepository.saveExercise(exerciseData, idToken, new ExerciseService.SaveCallback() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(RecordExerciseActivity.this, "Exercise saved successfully", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                            
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(RecordExerciseActivity.this, error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } else {
                         Toast.makeText(this, "Authentication error", Toast.LENGTH_SHORT).show();
                     }
@@ -450,74 +470,5 @@ public class RecordExerciseActivity extends AppCompatActivity {
             return false;
         }
         return true;
-    }
-    
-    private void sendUpdatedExerciseData(JSONObject exerciseData, String idToken) {
-        try {
-            // Extract the ID from the MongoDB ObjectId format if necessary
-            String id = exerciseId;
-            if (exerciseId.contains("$oid")) {
-                // Parse the MongoDB ObjectId format
-                JSONObject jsonId = new JSONObject(exerciseId);
-                id = jsonId.getString("$oid");
-            }
-            
-            String url = API_URL + "/" + id;
-            
-            JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.PUT,
-                url,
-                exerciseData,
-                response -> {
-                    Log.d(TAG, "Exercise updated successfully");
-                    Toast.makeText(this, "Exercise updated successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                },
-                error -> {
-                    Log.e(TAG, "Error updating exercise: " + error.toString());
-                    Toast.makeText(this, "Error updating exercise", Toast.LENGTH_SHORT).show();
-                }
-            ) {
-                @Override
-                public Map<String, String> getHeaders() {
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("Authorization", "Bearer " + idToken);
-                    headers.put("Content-Type", "application/json");
-                    return headers;
-                }
-            };
-            
-            requestQueue.add(request);
-        } catch (Exception e) {
-            Log.e(TAG, "Error preparing update request", e);
-            Toast.makeText(this, "Error updating exercise: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void sendExerciseData(JSONObject exerciseData, String idToken) {
-        JsonObjectRequest request = new JsonObjectRequest(
-            Request.Method.POST,
-            API_URL,
-            exerciseData,
-            response -> {
-                Log.d(TAG, "Exercise saved successfully");
-                Toast.makeText(this, "Exercise saved successfully", Toast.LENGTH_SHORT).show();
-                finish();
-            },
-            error -> {
-                Log.e(TAG, "Error saving exercise: " + error.toString());
-                Toast.makeText(this, "Error saving exercise", Toast.LENGTH_SHORT).show();
-            }
-        ) {
-            @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + idToken);
-                headers.put("Content-Type", "application/json");
-                return headers;
-            }
-        };
-
-        requestQueue.add(request);
     }
 } 
