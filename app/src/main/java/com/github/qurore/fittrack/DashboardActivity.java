@@ -17,7 +17,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;

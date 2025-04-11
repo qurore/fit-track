@@ -109,12 +109,6 @@ public class WorkoutHistoryFragment extends Fragment {
             }
         });
         
-        // Observe loading state
-        exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            // Remove reference to SwipeRefreshLayout
-            // Just a stub for now as we don't need to do anything special with loading state
-        });
-        
         // Observe error messages
         exerciseRepository.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
             if (isAdded() && errorMessage != null && !errorMessage.isEmpty()) {
