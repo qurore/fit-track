@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -166,6 +167,12 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Set up bottom navigation
         setupBottomNavigation();
+        
+        // Restore selected tab if saved instance state exists
+        if (savedInstanceState != null) {
+            int selectedTabId = savedInstanceState.getInt("SELECTED_TAB_ID", R.id.navigation_home);
+            bottomNavigationView.setSelectedItemId(selectedTabId);
+        }
     }
     
     private void setupActivityChart() {
@@ -622,8 +629,16 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     // Implementation of the interface method
     @Override
     public void onNameUpdated(String newName) {
-        Log.d("DashboardActivity", "onNameUpdated called with new name: " + newName);
+        // Update username in header
         headerUsernameTextView.setText(newName);
+        userName = newName;
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save the current selected tab ID
+        outState.putInt("SELECTED_TAB_ID", bottomNavigationView.getSelectedItemId());
     }
 
     // Custom ValueFormatter to display integers

@@ -20,6 +20,7 @@
         <!-- Dashboard activity for post-login UI -->
         <activity
             android:name=".DashboardActivity"
+            android:configChanges="orientation|screenSize"
             android:exported="false" />
             
         <activity
