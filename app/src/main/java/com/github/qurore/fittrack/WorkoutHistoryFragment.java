@@ -16,7 +16,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.qurore.fittrack.repository.ExerciseRepository;
 import com.github.qurore.fittrack.services.ExerciseService;
@@ -38,7 +37,6 @@ public class WorkoutHistoryFragment extends Fragment {
     private static final int VIEW_TYPE_EXERCISE = 1;
     
     private RecyclerView workoutHistoryList;
-    private SwipeRefreshLayout swipeRefreshLayout;
     private ExerciseRepository exerciseRepository;
     private WorkoutHistoryAdapter adapter;
     private TextView noExercisesText;
@@ -62,15 +60,11 @@ public class WorkoutHistoryFragment extends Fragment {
         
         // Initialize views
         workoutHistoryList = view.findViewById(R.id.workoutHistoryList);
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         noExercisesText = view.findViewById(R.id.noExercisesText);
         addExerciseLink = view.findViewById(R.id.addExerciseLink);
         
         // Set up RecyclerView
         workoutHistoryList.setLayoutManager(new LinearLayoutManager(getContext()));
-        
-        // Initialize SwipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener(this::loadExercises);
         
         // Initialize adapter with empty list
         adapter = new WorkoutHistoryAdapter(new ArrayList<>());
@@ -117,9 +111,8 @@ public class WorkoutHistoryFragment extends Fragment {
         
         // Observe loading state
         exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isAdded()) {
-                swipeRefreshLayout.setRefreshing(isLoading);
-            }
+            // Remove reference to SwipeRefreshLayout
+            // Just a stub for now as we don't need to do anything special with loading state
         });
         
         // Observe error messages

@@ -65,20 +65,6 @@ dependencies {
     implementation("androidx.core:core:1.12.0")
     implementation("androidx.window:window:1.2.0")
     
-    // SwipeRefreshLayout dependency
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    
-    // Original MongoDB Java Driver with packaging exclusions and excluding bson-record-codec
-    // implementation("org.mongodb:mongodb-driver-sync:4.9.1") {
-    //     exclude(group = "org.mongodb", module = "bson-record-codec")
-    //     // Exclude the conflicting activation dependency
-    //     exclude(group = "javax.activation", module = "activation")
-    // }
-    
-    // RxJava for async operations
-    // implementation("io.reactivex.rxjava3:rxjava:3.1.6")
-    // implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
-    
     // Core library desugaring (Java 8+ APIサポート)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
     

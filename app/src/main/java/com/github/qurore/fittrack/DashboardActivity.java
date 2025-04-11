@@ -69,7 +69,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     private TextView totalDurationValue;
     private TextView weekRangeText;
     private RecyclerView recentWorkoutsList;
-    private SwipeRefreshLayout swipeRefreshLayout;
     
     // Workout content
     private ConstraintLayout workoutContentLayout;
@@ -122,14 +121,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         totalDurationValue = homeContentLayout.findViewById(R.id.totalDurationValue);
         weekRangeText = homeContentLayout.findViewById(R.id.weekRangeText);
         recentWorkoutsList = homeContentLayout.findViewById(R.id.recentWorkoutsList);
-        swipeRefreshLayout = homeContentLayout.findViewById(R.id.swipeRefreshLayout);
-        
-        // Set up swipe refresh layout first - must be done before setupActivityChart
-        if (swipeRefreshLayout != null) {
-            setupSwipeRefresh();
-        } else {
-            Log.e("DashboardActivity", "SwipeRefreshLayout not found in the layout");
-        }
         
         // Initialize Workout content views
         workoutContentLayout = findViewById(R.id.workoutContentLayout);
@@ -214,59 +205,14 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         return super.onOptionsItemSelected(item);
     }
     
-    private void setupSwipeRefresh() {
-        if (swipeRefreshLayout == null) {
-            Log.e("DashboardActivity", "Cannot setup SwipeRefreshLayout: it is null");
-            return;
-        }
-        
-        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.primary));
-        swipeRefreshLayout.setOnRefreshListener(this::refreshDashboardData);
-        
-        // Observe loading state from repository
-        exerciseRepository.getIsLoading().observe(this, isLoading -> {
-            if (swipeRefreshLayout != null && !isLoading) {
-                // When loading is complete, stop the refresh animation
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
-        
-        // Observe error messages from repository
-        exerciseRepository.getErrorMessage().observe(this, errorMessage -> {
-            if (errorMessage != null && !errorMessage.isEmpty()) {
-                // Show actionable error message instructing the user what to do
-                String actionableMessage;
-                
-                if (errorMessage.contains("AuthFailure") || errorMessage.contains("403")) {
-                    actionableMessage = "Authentication error occurred. Please tap the refresh button or pull down to reload.";
-                } else {
-                    actionableMessage = "Error loading data. Please tap the refresh button to try again.";
-                }
-                
-                Toast.makeText(this, actionableMessage, Toast.LENGTH_LONG).show();
-                
-                // Stop the refresh animation
-                if (swipeRefreshLayout != null) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-            }
-        });
-    }
-    
     /**
      * Refreshes all dashboard data by fetching the latest from the repository
      */
     private void refreshDashboardData() {
-        // Show the refresh indicator
-        if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setRefreshing(true);
-        }
-        
         // Refresh data from repository
         exerciseRepository.refreshExercises();
         
         // The UI will be updated automatically through LiveData observers
-        // No need to call setupActivityChart() or setupRecentWorkouts() explicitly
     }
     
     /**
@@ -287,13 +233,6 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     }
     
     private void setupActivityChart() {
-        // Show the refresh indicator when starting to load data
-        if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setRefreshing(true);
-        } else {
-            Log.e("DashboardActivity", "SwipeRefreshLayout is null in setupActivityChart");
-        }
-        
         // Use repository to get exercises
         exerciseRepository.getExercises().observe(this, exercises -> {
             // Get current week's data

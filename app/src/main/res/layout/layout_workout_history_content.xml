@@ -32,8 +32,7 @@
         app:layout_constraintTop_toTopOf="@id/historyTitle"
         app:layout_constraintBottom_toBottomOf="@id/historyTitle" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefreshLayout"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
@@ -42,37 +41,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/historyTitle">
 
-        <FrameLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/workoutHistoryList"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/historyTitle" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/workoutHistoryList"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clipToPadding="false"
-                android:paddingBottom="16dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/historyTitle" />
+        <TextView
+            android:id="@+id/noExercisesText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No exercises recorded yet"
+            android:textSize="16sp"
+            android:textColor="?android:textColorSecondary"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/workoutHistoryList" />
 
-            <TextView
-                android:id="@+id/noExercisesText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="No exercises recorded yet"
-                android:textSize="16sp"
-                android:textColor="?android:textColorSecondary"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/workoutHistoryList" />
-
-        </FrameLayout>
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

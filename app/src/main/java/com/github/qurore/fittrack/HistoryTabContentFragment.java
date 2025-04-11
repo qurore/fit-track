@@ -43,7 +43,6 @@ import com.github.qurore.fittrack.repository.ExerciseRepository;
 import com.github.qurore.fittrack.services.ExerciseService;
 
 import org.json.JSONObject;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class HistoryTabContentFragment extends Fragment {
     private TextView titleTextView;
@@ -66,7 +65,6 @@ public class HistoryTabContentFragment extends Fragment {
     private boolean showCount = true; // true for count, false for minutes
     private ExerciseRepository exerciseRepository;
     private ExerciseService exerciseService;
-    private SwipeRefreshLayout swipeRefreshLayout;
 
     public static HistoryTabContentFragment newInstance() {
         return new HistoryTabContentFragment();
@@ -99,7 +97,6 @@ public class HistoryTabContentFragment extends Fragment {
         startDateText = view.findViewById(R.id.startDateText);
         endDateText = view.findViewById(R.id.endDateText);
         graphContainer = view.findViewById(R.id.graphContainer);
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
         
         // Initialize checkboxes
         strengthCheckbox = view.findViewById(R.id.strengthCheckbox);
@@ -137,9 +134,6 @@ public class HistoryTabContentFragment extends Fragment {
         
         // Load data and update graph
         updateGraph();
-        
-        // Setup SwipeRefreshLayout
-        setupSwipeRefreshLayout();
     }
     
     @Override
@@ -473,20 +467,6 @@ public class HistoryTabContentFragment extends Fragment {
                 
                 // Update description
                 updateDescription();
-            });
-        }
-    }
-
-    private void setupSwipeRefreshLayout() {
-        if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.primary));
-            swipeRefreshLayout.setOnRefreshListener(this::refreshStatisticsData);
-            
-            // Observe loading state from repository
-            exerciseRepository.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-                if (swipeRefreshLayout != null && isLoading != null) {
-                    swipeRefreshLayout.setRefreshing(isLoading);
-                }
             });
         }
     }
