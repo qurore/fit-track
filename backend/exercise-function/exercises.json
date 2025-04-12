@@ -1,0 +1,246 @@
+{
+    "categories": [
+      {
+        "type": "Strength",
+        "subcategories": [
+          {
+            "name": "Chest",
+            "exercises": [
+              {"name": "Bench Press"},
+              {"name": "Incline Bench Press"},
+              {"name": "Decline Bench Press"},
+              {"name": "Dumbbell Fly"},
+              {"name": "Push Press"},
+              {"name": "Cable Crossover"},
+              {"name": "Push-Up"},
+              {"name": "Chest Dip"},
+              {"name": "Machine Chest Press"}
+            ]
+          },
+          {
+            "name": "Back",
+            "exercises": [
+              {"name": "Deadlift"},
+              {"name": "Pull-Up"},
+              {"name": "Lat Pulldown"},
+              {"name": "Bent Over Row"},
+              {"name": "T-Bar Row"},
+              {"name": "Seated Cable Row"},
+              {"name": "Face Pull"},
+              {"name": "Back Extension"}
+            ]
+          },
+          {
+            "name": "Legs",
+            "exercises": [
+              {"name": "Squat"},
+              {"name": "Leg Press"},
+              {"name": "Lunge"},
+              {"name": "Leg Extension"},
+              {"name": "Leg Curl"},
+              {"name": "Calf Raise"},
+              {"name": "Hip Thrust"},
+              {"name": "Romanian Deadlift"}
+            ]
+          },
+          {
+            "name": "Shoulders",
+            "exercises": [
+              {"name": "Overhead Press"},
+              {"name": "Lateral Raise"},
+              {"name": "Front Raise"},
+              {"name": "Reverse Fly"},
+              {"name": "Shrug"},
+              {"name": "Upright Row"},
+              {"name": "Arnold Press"},
+              {"name": "Push Press"}
+            ]
+          },
+          {
+            "name": "Arms",
+            "exercises": [
+              {"name": "Bicep Curl"},
+              {"name": "Tricep Extension"},
+              {"name": "Hammer Curl"},
+              {"name": "Skull Crusher"},
+              {"name": "Dip"},
+              {"name": "Chin-Up"},
+              {"name": "Cable Pushdown"},
+              {"name": "Preacher Curl"}
+            ]
+          },
+          {
+            "name": "Core",
+            "exercises": [
+              {"name": "Crunch"},
+              {"name": "Plank"},
+              {"name": "Russian Twist"},
+              {"name": "Leg Raise"},
+              {"name": "Mountain Climber"},
+              {"name": "Ab Rollout"},
+              {"name": "Hanging Leg Raise"},
+              {"name": "Cable Woodchopper"}
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Cardio",
+        "subcategories": [
+          {
+            "name": "Running",
+            "exercises": [
+              {"name": "Outdoor Run"},
+              {"name": "Treadmill Run"},
+              {"name": "Interval Sprint"},
+              {"name": "Hill Run"},
+              {"name": "Trail Run"}
+            ]
+          },
+          {
+            "name": "Cycling",
+            "exercises": [
+              {"name": "Outdoor Cycling"},
+              {"name": "Stationary Bike"},
+              {"name": "Spin Class"},
+              {"name": "Mountain Biking"},
+              {"name": "Cycling Intervals"}
+            ]
+          },
+          {
+            "name": "Swimming",
+            "exercises": [
+              {"name": "Freestyle"},
+              {"name": "Backstroke"},
+              {"name": "Breaststroke"},
+              {"name": "Butterfly"},
+              {"name": "Swim Intervals"}
+            ]
+          },
+          {
+            "name": "Rowing",
+            "exercises": [
+              {"name": "Rowing Machine"},
+              {"name": "Outdoor Rowing"},
+              {"name": "Interval Rowing"}
+            ]
+          },
+          {
+            "name": "Other",
+            "exercises": [
+              {"name": "Elliptical"},
+              {"name": "Stair Climber"},
+              {"name": "Jump Rope"},
+              {"name": "Walking"},
+              {"name": "Hiking"}
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Flexibility",
+        "subcategories": [
+          {
+            "name": "Static Stretching",
+            "exercises": [
+              {"name": "Hamstring Stretch"},
+              {"name": "Quad Stretch"},
+              {"name": "Shoulder Stretch"},
+              {"name": "Calf Stretch"},
+              {"name": "Hip Flexor Stretch"},
+              {"name": "Chest Stretch"},
+              {"name": "Lower Back Stretch"}
+            ]
+          },
+          {
+            "name": "Dynamic Stretching",
+            "exercises": [
+              {"name": "Leg Swings"},
+              {"name": "Arm Circles"},
+              {"name": "Hip Circles"},
+              {"name": "Walking Lunges"},
+              {"name": "Torso Twists"}
+            ]
+          },
+          {
+            "name": "Yoga",
+            "exercises": [
+              {"name": "Downward Dog"},
+              {"name": "Warrior Pose"},
+              {"name": "Child's Pose"},
+              {"name": "Cobra Pose"},
+              {"name": "Tree Pose"},
+              {"name": "Sun Salutation"}
+            ]
+          },
+          {
+            "name": "Mobility",
+            "exercises": [
+              {"name": "Ankle Mobility"},
+              {"name": "Hip Mobility"},
+              {"name": "Thoracic Mobility"},
+              {"name": "Wrist Mobility"},
+              {"name": "Shoulder Mobility"}
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Functional",
+        "subcategories": [
+          {
+            "name": "Bodyweight",
+            "exercises": [
+              {"name": "Burpee"},
+              {"name": "Push-Up"},
+              {"name": "Pull-Up"},
+              {"name": "Squat Jump"},
+              {"name": "Lunge"},
+              {"name": "Bear Crawl"}
+            ]
+          },
+          {
+            "name": "HIIT",
+            "exercises": [
+              {"name": "Tabata"},
+              {"name": "AMRAP Circuit"},
+              {"name": "EMOM Workout"},
+              {"name": "Sprint Intervals"},
+              {"name": "Kettlebell Circuit"}
+            ]
+          },
+          {
+            "name": "Core Stability",
+            "exercises": [
+              {"name": "Plank"},
+              {"name": "Side Plank"},
+              {"name": "Bird Dog"},
+              {"name": "Dead Bug"},
+              {"name": "Hollow Hold"},
+              {"name": "Superman"}
+            ]
+          },
+          {
+            "name": "Compound Movements",
+            "exercises": [
+              {"name": "Turkish Get-Up"},
+              {"name": "Kettlebell Swing"},
+              {"name": "Medicine Ball Slam"},
+              {"name": "Thruster"},
+              {"name": "Clean and Press"}
+            ]
+          },
+          {
+            "name": "Balance",
+            "exercises": [
+              {"name": "Single Leg Stand"},
+              {"name": "Bosu Ball Squat"},
+              {"name": "Balance Board"},
+              {"name": "Stability Ball Pike"},
+              {"name": "Yoga Balance Poses"}
+            ]
+          }
+        ]
+      }
+    ]
+  }

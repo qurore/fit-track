@@ -1,11 +1,13 @@
 package com.github.qurore.fittrack;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -37,6 +39,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.github.qurore.fittrack.services.ExerciseService;
 import com.github.qurore.fittrack.repository.ExerciseRepository;
+import com.github.qurore.fittrack.repository.RecommendationRepository;
 
 import org.json.JSONObject;
 
@@ -68,6 +71,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     private TextView totalDurationValue;
     private TextView weekRangeText;
     private RecyclerView recentWorkoutsList;
+    private Button getSuggestionButton;
     
     // Workout content
     private ConstraintLayout workoutContentLayout;
@@ -86,6 +90,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     private View settingsContentLayout;
 
     private ExerciseRepository exerciseRepository;
+    private RecommendationRepository recommendationRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,8 +100,9 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         // Initialize Volley RequestQueue
         requestQueue = Volley.newRequestQueue(this);
         
-        // Initialize ExerciseRepository
+        // Initialize repositories
         exerciseRepository = ExerciseRepository.getInstance(this);
+        recommendationRepository = RecommendationRepository.getInstance(this);
         
         // Set up toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -120,6 +126,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         totalDurationValue = homeContentLayout.findViewById(R.id.totalDurationValue);
         weekRangeText = homeContentLayout.findViewById(R.id.weekRangeText);
         recentWorkoutsList = homeContentLayout.findViewById(R.id.recentWorkoutsList);
+        getSuggestionButton = homeContentLayout.findViewById(R.id.getSuggestionButton);
         
         // Initialize Workout content views
         workoutContentLayout = findViewById(R.id.workoutContentLayout);
@@ -172,6 +179,11 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         // Set up settings button
         settingsButton.setOnClickListener(v -> {
             showSettingsContent();
+        });
+        
+        // Set up suggestion button click listener
+        getSuggestionButton.setOnClickListener(v -> {
+            fetchAndShowExerciseSuggestion();
         });
         
         // Set up tabs for workout page
@@ -700,5 +712,84 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
             }
             return String.valueOf((int) value);
         }
+    }
+
+    /**
+     * Fetches an exercise suggestion from the backend and displays it in a dialog
+     */
+    private void fetchAndShowExerciseSuggestion() {
+        // Show loading toast
+        Toast.makeText(this, "Fetching suggestion...", Toast.LENGTH_SHORT).show();
+        
+        // Get recommendation from the repository
+        recommendationRepository.getTodayRecommendation(new RecommendationRepository.RecommendationCallback() {
+            @Override
+            public void onSuccess(JSONObject recommendedExercise) {
+                try {
+                    // Extract exercise details
+                    String exerciseType = capitalizeWords(recommendedExercise.getString("exercise_type"));
+                    String exerciseSubtype = capitalizeWords(recommendedExercise.getString("exercise_subtype"));
+                    String exerciseName = capitalizeWords(recommendedExercise.getString("exercise_name"));
+                    
+                    // Format the suggestion text
+                    String suggestionText = String.format(
+                        "Now is the perfect time for you to do %s - %s %s!",
+                        exerciseType, exerciseSubtype, exerciseName
+                    );
+                    
+                    // Show the dialog on the UI thread
+                    runOnUiThread(() -> showSuggestionDialog(
+                        suggestionText, exerciseType, exerciseSubtype, exerciseName));
+                    
+                } catch (Exception e) {
+                    Log.e("DashboardActivity", "Error parsing recommendation: " + e.getMessage());
+                    Toast.makeText(DashboardActivity.this, 
+                        "Error processing suggestion", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onError(String error) {
+                Toast.makeText(DashboardActivity.this, 
+                    "Could not get recommendation: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    
+    /**
+     * Displays the exercise suggestion dialog with Do It! and Skip options
+     */
+    private void showSuggestionDialog(String suggestionText, String exerciseType, 
+                                    String exerciseSubtype, String exerciseName) {
+        // Create dialog
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_exercise_suggestion);
+        dialog.setCancelable(true);
+        
+        // Get dialog views
+        TextView suggestionTextView = dialog.findViewById(R.id.suggestionText);
+        Button skipButton = dialog.findViewById(R.id.skipButton);
+        Button doItButton = dialog.findViewById(R.id.doItButton);
+        
+        // Set suggestion text
+        suggestionTextView.setText(suggestionText);
+        
+        // Set button click listeners
+        skipButton.setOnClickListener(v -> dialog.dismiss());
+        
+        doItButton.setOnClickListener(v -> {
+            dialog.dismiss();
+            
+            // Start RecordExerciseActivity with the suggested exercise
+            Intent intent = new Intent(DashboardActivity.this, RecordExerciseActivity.class);
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_NAME, exerciseName);
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_TYPE, exerciseType);
+            intent.putExtra(RecordExerciseActivity.EXTRA_EXERCISE_SUBTYPE, exerciseSubtype);
+            startActivity(intent);
+        });
+        
+        // Show the dialog
+        dialog.show();
     }
 } 
