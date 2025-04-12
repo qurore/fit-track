@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Contact:\nFor any questions about these terms or privacy policy, please contact us at support@fittrack.com" />
+                android:text="Contact:\nFor any questions about these terms or privacy policy, please contact us at test.fittrack@gmail.com" />
 
             <TextView
                 android:layout_width="match_parent"
