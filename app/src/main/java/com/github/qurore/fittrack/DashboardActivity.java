@@ -733,8 +733,8 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                     
                     // Format the suggestion text
                     String suggestionText = String.format(
-                        "Now is the perfect time for you to do %s - %s %s!",
-                        exerciseType, exerciseSubtype, exerciseName
+                        "Now is the perfect time for you to do %s (%s - %s)!",
+                        exerciseName, exerciseType, exerciseSubtype
                     );
                     
                     // Show the dialog on the UI thread
@@ -744,7 +744,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
                 } catch (Exception e) {
                     Log.e("DashboardActivity", "Error parsing recommendation: " + e.getMessage());
                     Toast.makeText(DashboardActivity.this, 
-                        "Error processing suggestion", Toast.LENGTH_SHORT).show();
+                        "Error processing suggestion, please try again later.", Toast.LENGTH_SHORT).show();
                 }
             }
             

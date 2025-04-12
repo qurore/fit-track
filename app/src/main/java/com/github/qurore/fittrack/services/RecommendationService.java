@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class RecommendationService {
     private static final String TAG = "RecommendationService";
-    private static final String API_URL = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/recommendations";
+    private static final String API_URL = "https://xg95njnqd7.execute-api.us-west-2.amazonaws.com/Prod/recommendation";
     
     private final RequestQueue requestQueue;
     private final FirebaseAuth mAuth;
@@ -53,7 +53,7 @@ public class RecommendationService {
     private void fetchRecommendation(String idToken, RecommendationCallback callback) {
         JsonObjectRequest request = new JsonObjectRequest(
             Request.Method.GET,
-            API_URL + "/today",
+            API_URL,
             null,
             response -> {
                 try {

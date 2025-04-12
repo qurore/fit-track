@@ -104,6 +104,28 @@ Resources:
             Path: /exercises/{id}
             Method: delete
 
+  RecommendationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: recommendation-function/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          MONGODB_URI: !Sub '{{resolve:secretsmanager:${MongoDBURISecret}}}'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'secretsmanager:GetSecretValue'
+              Resource: !Sub 'arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${MongoDBURISecret}'
+      Events:
+        GetRecommendation:
+          Type: Api
+          Properties:
+            Path: /recommendation
+            Method: get
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -134,6 +156,9 @@ Outputs:
   ExerciseApi:
     Description: "API Gateway endpoint URL for Prod stage for Exercise function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/exercises"
+  RecommendationApi:
+    Description: "API Gateway endpoint URL for Prod stage for Recommendation function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/recommendation"
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
