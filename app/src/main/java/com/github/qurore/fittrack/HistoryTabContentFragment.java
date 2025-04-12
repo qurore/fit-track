@@ -290,8 +290,6 @@ public class HistoryTabContentFragment extends Fragment {
         
         // Trigger a refresh to get the latest data
         exerciseRepository.refreshExercises();
-        
-        // The actual data processing is handled by the observer
     }
     
     // Helper to capitalize the first letter of a string
@@ -370,6 +368,9 @@ public class HistoryTabContentFragment extends Fragment {
         // Calculate time range
         long startTime = startCal.getTimeInMillis();
         long endTime = endCal.getTimeInMillis();
+        
+        // Log date range for debugging
+        Log.d("HistoryFragment", "Filtering from " + new Date(startTime) + " to " + new Date(endTime));
         
         // Map to store the data (day -> value)
         TreeMap<Long, Integer> dayData = new TreeMap<>();
