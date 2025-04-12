@@ -34,4 +34,10 @@
     <color name="background">@color/white</color>
     <color name="surface">@color/white</color>
     <color name="divider">#1F000000</color>
+    
+    <!-- Exercise type colors -->
+    <color name="strength_color">#FF5722</color>  <!-- Orange -->
+    <color name="cardio_color">#2196F3</color>    <!-- Blue -->
+    <color name="flexibility_color">#4CAF50</color>  <!-- Green -->
+    <color name="functional_color">#9C27B0</color>  <!-- Purple -->
 </resources>

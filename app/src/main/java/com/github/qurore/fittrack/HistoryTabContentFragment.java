@@ -153,7 +153,7 @@ public class HistoryTabContentFragment extends Fragment {
         barChart.setDrawBorders(false);
         barChart.setScaleEnabled(true);
         barChart.setPinchZoom(true);
-        barChart.getLegend().setEnabled(false);
+        barChart.getLegend().setEnabled(true);
         
         // Setup X axis
         XAxis xAxis = barChart.getXAxis();
@@ -372,8 +372,11 @@ public class HistoryTabContentFragment extends Fragment {
         // Log date range for debugging
         Log.d("HistoryFragment", "Filtering from " + new Date(startTime) + " to " + new Date(endTime));
         
-        // Map to store the data (day -> value)
-        TreeMap<Long, Integer> dayData = new TreeMap<>();
+        // Maps to store the data for each exercise type (day -> value)
+        TreeMap<Long, Integer> strengthData = new TreeMap<>();
+        TreeMap<Long, Integer> cardioData = new TreeMap<>();
+        TreeMap<Long, Integer> flexibilityData = new TreeMap<>();
+        TreeMap<Long, Integer> functionalData = new TreeMap<>();
         
         // Track days in the range to ensure we have entries for all days
         List<Long> daysInRange = new ArrayList<>();
@@ -387,7 +390,13 @@ public class HistoryTabContentFragment extends Fragment {
             long dayKey = getDayKey(cal.getTimeInMillis());
             daysInRange.add(dayKey);
             dayLabels.add(displayDateFormat.format(cal.getTime()));
-            dayData.put(dayKey, 0); // Initialize with zero
+            
+            // Initialize each type with zero for this day
+            strengthData.put(dayKey, 0);
+            cardioData.put(dayKey, 0);
+            flexibilityData.put(dayKey, 0);
+            functionalData.put(dayKey, 0);
+            
             cal.add(Calendar.DAY_OF_YEAR, 1);
         }
         
@@ -424,11 +433,20 @@ public class HistoryTabContentFragment extends Fragment {
                     value = exercise.getInt("duration");
                 }
                 
-                // Update the day's data
-                if (dayData.containsKey(dayKey)) {
-                    dayData.put(dayKey, dayData.get(dayKey) + value);
-                } else {
-                    dayData.put(dayKey, value);
+                // Update the specific type's data
+                switch (typeTitleCase) {
+                    case "Strength":
+                        strengthData.put(dayKey, strengthData.get(dayKey) + value);
+                        break;
+                    case "Cardio":
+                        cardioData.put(dayKey, cardioData.get(dayKey) + value);
+                        break;
+                    case "Flexibility":
+                        flexibilityData.put(dayKey, flexibilityData.get(dayKey) + value);
+                        break;
+                    case "Functional":
+                        functionalData.put(dayKey, functionalData.get(dayKey) + value);
+                        break;
                 }
                 
             } catch (Exception e) {
@@ -436,22 +454,39 @@ public class HistoryTabContentFragment extends Fragment {
             }
         }
         
-        // Create chart entries
+        // Create chart entries for each type
         ArrayList<BarEntry> entries = new ArrayList<>();
         
-        // Create entries for each day
+        // Create stacked entries for each day
         for (int i = 0; i < daysInRange.size(); i++) {
             long dayKey = daysInRange.get(i);
-            int value = dayData.get(dayKey);
-            entries.add(new BarEntry(i, value));
+            
+            // Create a float array with values for each type
+            float[] stackValues = new float[4];
+            stackValues[0] = strengthData.get(dayKey);
+            stackValues[1] = cardioData.get(dayKey);
+            stackValues[2] = flexibilityData.get(dayKey);
+            stackValues[3] = functionalData.get(dayKey);
+            
+            // Add stacked entry
+            entries.add(new BarEntry(i, stackValues));
         }
         
         // Update chart on UI thread
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
                 // Create the data set
-                BarDataSet dataSet = new BarDataSet(entries, showCount ? "Exercise Count" : "Exercise Minutes");
-                dataSet.setColor(getResources().getColor(R.color.primary));
+                BarDataSet dataSet = new BarDataSet(entries, "");
+                
+                // Set colors for each type
+                dataSet.setColors(
+                    getResources().getColor(R.color.strength_color),  // Strength
+                    getResources().getColor(R.color.cardio_color),    // Cardio
+                    getResources().getColor(R.color.flexibility_color), // Flexibility
+                    getResources().getColor(R.color.functional_color)   // Functional
+                );
+                
+                dataSet.setStackLabels(new String[]{"Strength", "Cardio", "Flexibility", "Functional"});
                 dataSet.setDrawValues(true);
                 dataSet.setValueFormatter(new IntegerValueFormatter());
                 
@@ -461,6 +496,10 @@ public class HistoryTabContentFragment extends Fragment {
                 
                 // Set the labels
                 barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(dayLabels));
+                
+                // Enable stacking
+                barChart.setDrawValueAboveBar(true);
+                barChart.getLegend().setEnabled(true);
                 
                 // Update the chart
                 barChart.setData(barData);
