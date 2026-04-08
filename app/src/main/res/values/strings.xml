@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">FitTrack</string>
     
+    <!-- Google Sign-In placeholder (overridden by google-services.json at build time) -->
+    <string name="default_web_client_id" translatable="false">placeholder</string>
+
     <!-- Firebase Authentication strings -->
     <string name="welcome_user">Welcome, %1$s!</string>
     <string name="sign_in">Sign in with Google</string>

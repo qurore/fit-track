@@ -16,4 +16,8 @@
         android:id="@+id/navigation_statistics"
         android:icon="@android:drawable/ic_menu_info_details"
         android:title="Statistics" />
+    <item
+        android:id="@+id/navigation_timer"
+        android:icon="@drawable/ic_timer_24"
+        android:title="Timer" />
 </menu> 
