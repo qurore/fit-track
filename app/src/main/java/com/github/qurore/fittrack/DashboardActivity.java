@@ -89,6 +89,13 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
     // Settings content
     private View settingsContentLayout;
 
+    // Timer content
+    private View timerContentLayout;
+    private TabLayout timerTabLayout;
+    private ViewPager2 timerViewPager;
+    private TimerTabPagerAdapter timerTabPagerAdapter;
+    private boolean timerTabsInitialized = false;
+
     private ExerciseRepository exerciseRepository;
     private RecommendationRepository recommendationRepository;
 
@@ -141,6 +148,11 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         
         // Initialize Settings content view
         settingsContentLayout = findViewById(R.id.settingsContentLayout);
+
+        // Initialize Timer content views
+        timerContentLayout = findViewById(R.id.timerContentLayout);
+        timerTabLayout = findViewById(R.id.timerTabLayout);
+        timerViewPager = findViewById(R.id.timerViewPager);
         
         // Get user data and update UI
         try {
@@ -192,8 +204,12 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         // Set up bottom navigation
         setupBottomNavigation();
         
+        // Handle notification tap intent (select Timer tab)
+        if (getIntent() != null && "timer".equals(getIntent().getStringExtra("SELECT_TAB"))) {
+            bottomNavigationView.setSelectedItemId(R.id.navigation_timer);
+        }
         // Restore selected tab if saved instance state exists
-        if (savedInstanceState != null) {
+        else if (savedInstanceState != null) {
             int selectedTabId = savedInstanceState.getInt("SELECTED_TAB_ID", R.id.navigation_home);
             bottomNavigationView.setSelectedItemId(selectedTabId);
         }
@@ -474,8 +490,11 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
             } else if (itemId == R.id.navigation_statistics) {
                 showStatisticsContent();
                 return true;
+            } else if (itemId == R.id.navigation_timer) {
+                showTimerContent();
+                return true;
             }
-            
+
             return false;
         });
         
@@ -490,6 +509,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
         findViewById(R.id.historyScrollView).setVisibility(View.GONE);
         findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        findViewById(R.id.timerScrollView).setVisibility(View.GONE);
         
         // Set visibility of actual content
         homeContentLayout.setVisibility(View.VISIBLE);
@@ -505,6 +525,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
         findViewById(R.id.historyScrollView).setVisibility(View.GONE);
         findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        findViewById(R.id.timerScrollView).setVisibility(View.GONE);
         
         // Set visibility of actual content
         workoutContentLayout.setVisibility(View.VISIBLE);
@@ -520,6 +541,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         findViewById(R.id.workoutHistoryScrollView).setVisibility(View.VISIBLE);
         findViewById(R.id.historyScrollView).setVisibility(View.GONE);
         findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        findViewById(R.id.timerScrollView).setVisibility(View.GONE);
         
         // Set visibility of actual content
         workoutHistoryContentLayout.setVisibility(View.VISIBLE);
@@ -543,6 +565,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
         findViewById(R.id.historyScrollView).setVisibility(View.VISIBLE);
         findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        findViewById(R.id.timerScrollView).setVisibility(View.GONE);
         
         // Set visibility of actual content
         historyContentLayout.setVisibility(View.VISIBLE);
@@ -560,6 +583,60 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         invalidateOptionsMenu();
     }
     
+    private void showTimerContent() {
+        // Set visibility of content containers
+        findViewById(R.id.homeScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutScrollView).setVisibility(View.GONE);
+        findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
+        findViewById(R.id.historyScrollView).setVisibility(View.GONE);
+        findViewById(R.id.settingsScrollView).setVisibility(View.GONE);
+        findViewById(R.id.timerScrollView).setVisibility(View.VISIBLE);
+
+        // Set visibility of actual content
+        timerContentLayout.setVisibility(View.VISIBLE);
+
+        // Initialize timer tabs if not already done
+        if (!timerTabsInitialized) {
+            timerTabPagerAdapter = new TimerTabPagerAdapter(this);
+            timerViewPager.setAdapter(timerTabPagerAdapter);
+            new TabLayoutMediator(timerTabLayout, timerViewPager, (tab, position) -> {
+                tab.setText(timerTabPagerAdapter.getTabTitle(position));
+            }).attach();
+            timerTabsInitialized = true;
+        }
+
+        // Update badge on timer nav icon based on running state
+        setupTimerBadge();
+
+        // Refresh options menu
+        invalidateOptionsMenu();
+    }
+
+    private void setupTimerBadge() {
+        com.github.qurore.fittrack.repository.TimerRepository repo =
+                com.github.qurore.fittrack.repository.TimerRepository.getInstance();
+
+        repo.getStopwatchState().observe(this, state -> updateTimerBadge());
+        repo.getTimerState().observe(this, state -> updateTimerBadge());
+    }
+
+    private void updateTimerBadge() {
+        com.github.qurore.fittrack.repository.TimerRepository repo =
+                com.github.qurore.fittrack.repository.TimerRepository.getInstance();
+
+        com.github.qurore.fittrack.data.TimerUiState swState = repo.getStopwatchState().getValue();
+        com.github.qurore.fittrack.data.TimerUiState tmState = repo.getTimerState().getValue();
+
+        boolean anyRunning = (swState != null && swState.getState() == com.github.qurore.fittrack.data.TimerUiState.State.RUNNING)
+                || (tmState != null && tmState.getState() == com.github.qurore.fittrack.data.TimerUiState.State.RUNNING);
+
+        if (anyRunning) {
+            bottomNavigationView.getOrCreateBadge(R.id.navigation_timer);
+        } else {
+            bottomNavigationView.removeBadge(R.id.navigation_timer);
+        }
+    }
+
     private void showSettingsContent() {
         // Set visibility of content containers
         findViewById(R.id.homeScrollView).setVisibility(View.GONE);
@@ -567,6 +644,7 @@ public class DashboardActivity extends AppCompatActivity implements SettingsFrag
         findViewById(R.id.workoutHistoryScrollView).setVisibility(View.GONE);
         findViewById(R.id.historyScrollView).setVisibility(View.GONE);
         findViewById(R.id.settingsScrollView).setVisibility(View.VISIBLE);
+        findViewById(R.id.timerScrollView).setVisibility(View.GONE);
         
         // Set visibility of actual content
         settingsContentLayout.setVisibility(View.VISIBLE);
