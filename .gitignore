@@ -66,3 +66,9 @@ workbench/
 
 # AWS SAM related credentials
 backend/fittrack-6775b-firebase-adminsdk.json
+
+# .claude
+.claude/
+
+# .specify
+.specify/
